@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Not found — Tardigrade Innovation" description="Page not found.">
+  <main class="not-found">
+    <div class="wrap">
+      <p class="code">404</p>
+      <h1 class="display-section title">page not found in this <em>lab</em>.</h1>
+      <p class="hint">The link may be wrong, or the file may have been moved.</p>
+      <a href="/" class="btn btn-primary">
+        Back to home <span class="arrow">→</span>
+      </a>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .not-found {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .code {
+    font-family: var(--mono);
+    font-size: clamp(4rem, 12vw, 8rem);
+    color: var(--phosphor);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .title {
+    margin-bottom: 1.5rem;
+  }
+  .hint {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--bone-faint);
+    margin-bottom: 2rem;
+    letter-spacing: 0.04em;
+  }
+</style>

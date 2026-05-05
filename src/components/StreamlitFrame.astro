@@ -1,0 +1,94 @@
+---
+import { STREAMLIT_HOST } from '../lib/config';
+
+interface Props {
+  slug: string;
+  title: string;
+}
+
+const { slug, title } = Astro.props;
+const src = `${STREAMLIT_HOST}/?embed=true&embed_options=disable_scrolling&demo=${slug}`;
+---
+
+<div class="demo-frame">
+  <div class="demo-loading" data-loading>
+    <span class="demo-loading-dot"></span>
+    <span class="demo-loading-text">LOADING DEMO ENVIRONMENT…</span>
+  </div>
+  <iframe
+    src={src}
+    title={`Live demo: ${title}`}
+    loading="lazy"
+    allow="fullscreen; clipboard-write"
+    referrerpolicy="no-referrer"
+    onload="this.parentElement?.querySelector('[data-loading]')?.setAttribute('hidden','')"
+  ></iframe>
+</div>
+<a class="demo-newtab" href={src.replace('embed=true&embed_options=disable_scrolling&', '')} target="_blank" rel="noopener">
+  Open in new tab ↗
+</a>
+
+<style>
+  .demo-frame {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border: 1px solid var(--rule);
+    background: var(--ink-2);
+    position: relative;
+    overflow: hidden;
+  }
+  .demo-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+  @media (max-width: 760px) {
+    .demo-frame { aspect-ratio: 4 / 5; }
+  }
+
+  .demo-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    background: var(--ink-2);
+    color: var(--phosphor);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .demo-loading[hidden] { display: none; }
+
+  .demo-loading-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--phosphor);
+    box-shadow: 0 0 12px var(--phosphor);
+    animation: pulse-loading 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse-loading {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .demo-loading-dot { animation: none; }
+  }
+
+  .demo-newtab {
+    display: inline-block;
+    margin-top: 1rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--bone-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .demo-newtab:hover { color: var(--phosphor); }
+</style>

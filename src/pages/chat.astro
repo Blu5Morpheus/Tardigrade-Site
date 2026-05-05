@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { STREAMLIT_HOST } from '../lib/config';
+
+const src = `${STREAMLIT_HOST}/?embed=true&demo=me-bot`;
+---
+
+<BaseLayout
+  title="Ask the lab — Tardigrade Innovation"
+  description="A retrieval-augmented chat about Raven's research and lab work."
+>
+  <main class="wrap chat-main">
+    <header class="chat-head">
+      <span class="index">§ 06 — ASK</span>
+      <h1 class="display-section">Ask the <em>lab</em>.</h1>
+      <p class="blurb">
+        A small assistant that knows what's on this site and a bit more.
+        Tightly scoped to research and professional work; it won't speculate
+        or invent. For anything outside its scope, the contact form is faster.
+      </p>
+    </header>
+
+    <div class="chat-frame">
+      <div class="chat-loading" data-loading>
+        <span class="chat-loading-dot"></span>
+        <span class="chat-loading-text">WARMING UP THE ASSISTANT…</span>
+      </div>
+      <iframe
+        src={src}
+        title="Ask the lab"
+        loading="lazy"
+        allow="clipboard-write"
+        referrerpolicy="no-referrer"
+        onload="this.parentElement?.querySelector('[data-loading]')?.setAttribute('hidden','')"
+      ></iframe>
+    </div>
+
+    <p class="chat-disclaimer">
+      Responses are generated. Sources cited under each answer link to the
+      published material the bot drew from.
+    </p>
+  </main>
+</BaseLayout>
+
+<style>
+  .chat-main { padding-block: clamp(3rem, 6vw, 5rem); }
+  .chat-head { margin-bottom: 2rem; max-width: 70ch; }
+  .index {
+    font-family: var(--mono);
+    color: var(--phosphor);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    margin-bottom: 0.8rem;
+    display: block;
+  }
+  h1 { margin-bottom: 1rem; }
+  .blurb {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    color: var(--bone-dim);
+    line-height: 1.5;
+  }
+
+  .chat-frame {
+    width: 100%;
+    height: 70vh;
+    min-height: 500px;
+    border: 1px solid var(--rule);
+    background: var(--ink-2);
+    margin-block: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .chat-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  .chat-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    color: var(--phosphor);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .chat-loading[hidden] { display: none; }
+  .chat-loading-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--phosphor);
+    box-shadow: 0 0 12px var(--phosphor);
+    animation: pulse-loading 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse-loading {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .chat-loading-dot { animation: none; }
+  }
+
+  .chat-disclaimer {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--bone-faint);
+    text-align: center;
+  }
+</style>

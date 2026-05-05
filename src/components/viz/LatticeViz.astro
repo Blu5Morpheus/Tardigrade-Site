@@ -1,0 +1,20 @@
+---
+// 3-row plaquette lattice glyph — used by Lattice and Amplituhedron demos.
+---
+<svg viewBox="0 0 400 90" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+  <g stroke="#7eff9f" fill="none" stroke-width="1" opacity="0.85">
+    {Array.from({ length: 3 }).map((_, row) =>
+      Array.from({ length: 9 }).map((__, col) => {
+        const x = 40 + col * 40;
+        const y = 20 + row * 25;
+        return (
+          <>
+            <circle cx={x} cy={y} r="2" fill="#7eff9f" />
+            {col < 8 && <line x1={x} y1={y} x2={x + 40} y2={y} />}
+            {row < 2 && <line x1={x} y1={y} x2={x} y2={y + 25} />}
+          </>
+        );
+      })
+    )}
+  </g>
+</svg>

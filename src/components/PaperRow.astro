@@ -1,0 +1,87 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  paper: CollectionEntry<'papers'>;
+}
+
+const { paper } = Astro.props;
+const { title, authors, venue, year, status, actionLabel, actionHref } = paper.data;
+
+const statusMap = {
+  'in-progress': { label: '● IN PROGRESS', cls: 'status-progress' },
+  draft: { label: 'DRAFT', cls: 'status-draft' },
+  published: { label: 'PUBLISHED', cls: 'status-published' },
+  'patent-wip': { label: 'PATENT WIP', cls: 'status-progress' },
+} as const;
+
+const statusInfo = statusMap[status];
+const meta = [authors, venue].filter(Boolean).join(' · ');
+---
+
+<a class="paper" href={actionHref}>
+  <span class="paper-year">{year}</span>
+  <div>
+    <div class="paper-title">
+      {title}
+      <small>{meta}</small>
+    </div>
+  </div>
+  <span class:list={['paper-status', statusInfo.cls]}>{statusInfo.label}</span>
+  <span class="paper-action">{actionLabel} →</span>
+</a>
+
+<style>
+  .paper {
+    display: grid;
+    grid-template-columns: 70px 1fr 100px 140px;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: center;
+    transition: padding 0.2s;
+  }
+  .paper:hover { padding-left: 0.5rem; }
+  .paper:hover .paper-title { color: var(--phosphor); }
+  .paper-year {
+    font-family: var(--mono);
+    color: var(--bone-faint);
+    font-size: 0.85rem;
+  }
+  .paper-title {
+    font-family: var(--display);
+    font-size: 1.15rem;
+    line-height: 1.3;
+    color: var(--bone);
+    transition: color 0.2s;
+  }
+  .paper-title small {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--bone-faint);
+    margin-top: 0.3rem;
+    letter-spacing: 0.04em;
+  }
+  .paper-status {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .status-progress { color: var(--amber); }
+  .status-published { color: var(--phosphor); }
+  .status-draft { color: var(--bone-faint); }
+  .paper-action {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bone-dim);
+    text-align: right;
+  }
+  @media (max-width: 760px) {
+    .paper { grid-template-columns: 60px 1fr; }
+    .paper-status, .paper-action { display: none; }
+  }
+</style>

@@ -1,0 +1,248 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { FORMSPREE_IDS } from '../../lib/config';
+
+export async function getStaticPaths() {
+  const preprints = await getCollection('preprints');
+  return preprints.map((preprint) => ({
+    params: { slug: preprint.slug },
+    props: { preprint },
+  }));
+}
+
+interface Props {
+  preprint: CollectionEntry<'preprints'>;
+}
+
+const { preprint } = Astro.props;
+const {
+  title,
+  authors,
+  venue,
+  year,
+  status,
+  arxivUrl,
+  pdfUrl,
+  codeUrl,
+  abstract,
+} = preprint.data;
+const { Content } = await preprint.render();
+
+const statusMap = {
+  'in-preparation': { label: '● IN PREPARATION', cls: 'status-progress' },
+  'on-arxiv': { label: 'ON ARXIV', cls: 'status-published' },
+  published: { label: 'PUBLISHED', cls: 'status-published' },
+} as const;
+
+const statusInfo = statusMap[status];
+
+const formAction =
+  FORMSPREE_IDS.preprintNotify === 'YOUR_FORMSPREE_ID'
+    ? undefined
+    : `https://formspree.io/f/${FORMSPREE_IDS.preprintNotify}`;
+---
+
+<BaseLayout
+  title={`${title} — Tardigrade Innovation`}
+  description={abstract.slice(0, 180)}
+>
+  <article class="preprint-detail">
+    <div class="wrap">
+      <header class="preprint-header">
+        <span class={`index ${statusInfo.cls}`}>{statusInfo.label}</span>
+        <h1 class="preprint-title">{title}</h1>
+        <p class="preprint-meta">
+          <span>{authors}</span>
+          {venue && <span> · {venue}</span>}
+          <span> · {year}</span>
+        </p>
+        <div class="preprint-actions">
+          {arxivUrl && (
+            <a href={arxivUrl} class="btn btn-primary" target="_blank" rel="noopener">
+              Read on arXiv <span class="arrow">→</span>
+            </a>
+          )}
+          {pdfUrl && (
+            <a href={pdfUrl} class="btn btn-ghost" target="_blank" rel="noopener">
+              PDF
+            </a>
+          )}
+          {codeUrl && (
+            <a href={codeUrl} class="btn btn-ghost" target="_blank" rel="noopener">
+              Code
+            </a>
+          )}
+        </div>
+      </header>
+
+      <section class="abstract">
+        <h2 class="label-phos">// ABSTRACT</h2>
+        <p>{abstract}</p>
+      </section>
+
+      <section class="prose">
+        <Content />
+      </section>
+
+      {status === 'in-preparation' && (
+        <aside class="notify">
+          <h2 class="label-phos">// NOTIFY ME</h2>
+          <p>Drop your email and you'll be the first to know when the preprint goes live.</p>
+          <form
+            class="notify-form"
+            method="POST"
+            action={formAction}
+            data-static={formAction === undefined ? 'true' : undefined}
+          >
+            <input type="email" name="email" required placeholder="email@domain.tld" aria-label="Email address" />
+            <input type="hidden" name="_subject" value={`Preprint notify: ${title}`} />
+            <button type="submit" class="btn btn-primary">
+              Notify me <span class="arrow">→</span>
+            </button>
+          </form>
+          <p class="notify-success" hidden>Thanks — we'll ping you when the preprint is live.</p>
+        </aside>
+      )}
+
+      <p class="back"><a href="/research">← Back to research</a></p>
+    </div>
+  </article>
+</BaseLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('form.notify-form[data-static="true"]');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      form.style.display = 'none';
+      const success = form.parentElement?.querySelector<HTMLElement>('.notify-success');
+      if (success) success.hidden = false;
+    });
+  }
+</script>
+
+<style>
+  .preprint-detail { padding: clamp(3rem, 6vw, 5rem) 0; }
+
+  .preprint-header {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .index {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    margin-bottom: 1rem;
+    display: block;
+  }
+  .index.status-progress { color: var(--amber); }
+  .index.status-published { color: var(--phosphor); }
+  .preprint-title {
+    font-family: var(--display);
+    font-weight: 300;
+    font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+    line-height: 1.15;
+    color: var(--bone);
+    margin-bottom: 1rem;
+    max-width: 50ch;
+  }
+  .preprint-meta {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--bone-faint);
+    letter-spacing: 0.04em;
+    margin-bottom: 2rem;
+  }
+  .preprint-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .abstract {
+    margin: 2.5rem 0;
+    padding: 2rem;
+    border: 1px solid var(--rule);
+    background: var(--ink-2);
+    max-width: 70ch;
+  }
+  .abstract h2 {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    margin-bottom: 1rem;
+  }
+  .abstract p {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--bone);
+    font-weight: 300;
+  }
+
+  .prose {
+    max-width: 64ch;
+    font-family: var(--display);
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--bone);
+    font-weight: 300;
+  }
+  .prose :global(p + p) { margin-top: 1.2em; }
+
+  .notify {
+    margin-top: 3rem;
+    padding: 2rem;
+    border: 1px solid var(--rule);
+    background: var(--ink-2);
+    max-width: 64ch;
+  }
+  .notify h2 {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    margin-bottom: 0.75rem;
+  }
+  .notify p {
+    font-family: var(--display);
+    color: var(--bone-dim);
+    margin-bottom: 1.5rem;
+  }
+  .notify-form {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .notify-form input[type="email"] {
+    flex: 1;
+    min-width: 220px;
+    padding: 0.95rem 1rem;
+    background: var(--ink);
+    border: 1px solid var(--rule);
+    color: var(--bone);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+  }
+  .notify-form input[type="email"]:focus {
+    outline: none;
+    border-color: var(--phosphor);
+  }
+  .notify-success {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--phosphor);
+    margin-top: 1rem;
+  }
+
+  .back {
+    margin-top: 3rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .back a { color: var(--bone-dim); }
+  .back a:hover { color: var(--phosphor); }
+</style>

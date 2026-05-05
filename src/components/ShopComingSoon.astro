@@ -1,0 +1,214 @@
+---
+import { FORMSPREE_IDS } from '../lib/config';
+
+interface Props {
+  /** When true, renders the fuller `/shop` page version with placeholder grid. */
+  full?: boolean;
+}
+
+const { full = false } = Astro.props;
+
+const formAction =
+  FORMSPREE_IDS.shopNotify === 'YOUR_FORMSPREE_ID'
+    ? undefined
+    : `https://formspree.io/f/${FORMSPREE_IDS.shopNotify}`;
+---
+
+<section id="shop">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="index">§ 03 — INCOMING</span>
+        <h2 class="display-section">The <em>shop</em>.</h2>
+      </div>
+      <p class="blurb">
+        Hardware kits, digital releases, and consulting hours — built and
+        shipped from Newport.
+      </p>
+    </div>
+
+    <div class="cosmic-dust">
+      <div class="cosmic-dust-inner">
+        <div class="dust-readout">
+          <span class="label-phos">● STATUS</span>
+          <span>CALIBRATING</span>
+        </div>
+
+        <h3 class="dust-headline">
+          Excuse our <em>cosmic dust</em> —<br />
+          we're prepping the product line.
+        </h3>
+
+        <p class="dust-body">
+          The first batch of L-band receiver kits and digital course
+          modules is being readied for the bench. Drop your address
+          and you'll be the first to hear when the lab opens for orders.
+        </p>
+
+        <form
+          class="dust-form"
+          name="shop-notify"
+          method="POST"
+          action={formAction}
+          data-static={formAction === undefined ? 'true' : undefined}
+        >
+          <input type="email" name="email" required placeholder="email@domain.tld" aria-label="Email address" />
+          <input type="hidden" name="_subject" value="Tardigrade shop notify-me signup" />
+          <button type="submit" class="btn btn-primary">
+            Notify me <span class="arrow">→</span>
+          </button>
+        </form>
+        <p class="dust-success" hidden>Thanks — we'll be in touch when the lab opens for orders.</p>
+
+        <p class="dust-meta">
+          Estimated launch: <strong>summer 2026</strong> · No marketing list, just the launch ping.
+        </p>
+      </div>
+
+      <div class="dust-field" aria-hidden="true"></div>
+    </div>
+
+    {full && (
+      <div class="shop-placeholder-grid">
+        {Array.from({ length: 6 }).map(() => (
+          <div class="placeholder-card">
+            <div class="placeholder-overlay">
+              <span class="label-phos">COMING SOON</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+</section>
+
+<script>
+  // Graceful fallback when no Formspree ID is configured.
+  const form = document.querySelector<HTMLFormElement>('form.dust-form[data-static="true"]');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      form.style.display = 'none';
+      const success = form.parentElement?.querySelector<HTMLElement>('.dust-success');
+      if (success) success.hidden = false;
+    });
+  }
+</script>
+
+<style>
+  .cosmic-dust {
+    position: relative;
+    border: 1px solid var(--rule);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .cosmic-dust-inner {
+    position: relative;
+    padding: clamp(2rem, 5vw, 4rem);
+    z-index: 2;
+  }
+  .dust-readout {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    display: flex;
+    gap: 1rem;
+    color: var(--bone-dim);
+    margin-bottom: 2rem;
+  }
+  .dust-headline {
+    font-family: var(--display);
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--bone);
+    margin-bottom: 1.25rem;
+  }
+  .dust-headline em { font-style: italic; }
+  .dust-body {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    color: var(--bone-dim);
+    max-width: 56ch;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+  }
+  .dust-form {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    max-width: 540px;
+  }
+  .dust-form input[type="email"] {
+    flex: 1;
+    min-width: 220px;
+    padding: 0.95rem 1rem;
+    background: var(--ink);
+    border: 1px solid var(--rule);
+    color: var(--bone);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+  }
+  .dust-form input[type="email"]:focus {
+    outline: none;
+    border-color: var(--phosphor);
+  }
+  .dust-success {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--phosphor);
+    margin-bottom: 1.5rem;
+  }
+  .dust-meta {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--bone-faint);
+    letter-spacing: 0.04em;
+  }
+  .dust-meta strong { color: var(--bone); font-weight: 500; }
+
+  .dust-field {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(126, 255, 159, 0.04), transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(126, 255, 159, 0.05), transparent 45%),
+      radial-gradient(circle at 60% 20%, rgba(126, 255, 159, 0.03), transparent 35%);
+    animation: dust-drift 24s ease-in-out infinite alternate;
+  }
+  @keyframes dust-drift {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-2%, 1%) scale(1.04); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dust-field { animation: none; }
+  }
+
+  .shop-placeholder-grid {
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    opacity: 0.4;
+  }
+  @media (max-width: 900px) {
+    .shop-placeholder-grid { grid-template-columns: 1fr; }
+  }
+  .placeholder-card {
+    aspect-ratio: 4 / 3;
+    border: 1px solid var(--rule);
+    background: var(--ink-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .placeholder-overlay {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+  }
+</style>

@@ -1,0 +1,160 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import StatusPanel from '../components/StatusPanel.astro';
+import { SITE, FORMSPREE_IDS } from '../lib/config';
+
+const contactRows = [
+  { label: 'Email', value: SITE.emailDisplay },
+  { label: 'Signal', value: 'on request' },
+  { label: 'HAM', value: `${SITE.callsign} · 14.230 MHz` },
+  { label: 'Mail', value: 'Newport, TN 37821' },
+];
+
+const formAction =
+  FORMSPREE_IDS.contact === 'YOUR_FORMSPREE_ID'
+    ? undefined
+    : `https://formspree.io/f/${FORMSPREE_IDS.contact}`;
+---
+
+<BaseLayout
+  title="Contact — Tardigrade Innovation"
+  description="Get in touch with Raven Roberts and Tardigrade Innovation."
+>
+  <Section
+    id="contact"
+    index="§ 05 — CHANNEL"
+    title="Get in {accent}."
+    titleAccent="touch"
+    blurb="For consulting, collaborations, press, or shop questions. I read every message. Replies inside 48 hours, usually faster."
+    background="ink-2"
+    bordered
+  >
+    <div class="contact-grid">
+      <div>
+        <StatusPanel
+          title="// DIRECT"
+          status="● OPEN"
+          rows={contactRows}
+        />
+        <a href={`mailto:${SITE.email}`} class="btn btn-primary contact-btn">
+          Compose message <span class="arrow">→</span>
+        </a>
+      </div>
+
+      <div>
+        <p class="contact-note">
+          For students and early-career researchers — yes, you can write to me cold.
+          I do my best to answer everyone, especially folks from rural and
+          first-generation backgrounds. Tell me what you're working on.
+        </p>
+
+        <form
+          class="contact-form"
+          method="POST"
+          action={formAction}
+          data-static={formAction === undefined ? 'true' : undefined}
+        >
+          <label>
+            <span class="sr-only">Your name</span>
+            <input type="text" name="name" required placeholder="Your name" autocomplete="name" />
+          </label>
+          <label>
+            <span class="sr-only">Your email</span>
+            <input type="email" name="email" required placeholder="email@domain.tld" autocomplete="email" />
+          </label>
+          <label>
+            <span class="sr-only">Subject</span>
+            <input type="text" name="subject" placeholder="Subject" />
+          </label>
+          <label>
+            <span class="sr-only">Message</span>
+            <textarea name="message" required placeholder="What are you working on?" rows="6"></textarea>
+          </label>
+          <button type="submit" class="btn btn-primary">
+            Send <span class="arrow">→</span>
+          </button>
+        </form>
+        <p class="contact-success" hidden>Thanks — your message is in my inbox.</p>
+      </div>
+    </div>
+  </Section>
+</BaseLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('form.contact-form[data-static="true"]');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      form.style.display = 'none';
+      const success = form.parentElement?.querySelector<HTMLElement>('.contact-success');
+      if (success) success.hidden = false;
+    });
+  }
+</script>
+
+<style>
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+  @media (max-width: 760px) {
+    .contact-grid { grid-template-columns: 1fr; }
+  }
+  .contact-btn { margin-top: 1.5rem; }
+
+  .contact-note {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--bone);
+    font-weight: 300;
+    margin-bottom: 2rem;
+  }
+
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .contact-form input,
+  .contact-form textarea {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    background: var(--ink);
+    border: 1px solid var(--rule);
+    color: var(--bone);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+  }
+  .contact-form textarea {
+    resize: vertical;
+    line-height: 1.5;
+  }
+  .contact-form input:focus,
+  .contact-form textarea:focus {
+    outline: none;
+    border-color: var(--phosphor);
+  }
+  .contact-form button { align-self: flex-start; }
+
+  .contact-success {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--phosphor);
+    margin-top: 1rem;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

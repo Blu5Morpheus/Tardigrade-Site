@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import ShopTabs from '../../components/ShopTabs.astro';
+import ShopComingSoon from '../../components/ShopComingSoon.astro';
+import { SHOP_LIVE } from '../../lib/config';
+
+const products = SHOP_LIVE
+  ? (await getCollection('products')).sort((a, b) => a.data.order - b.data.order)
+  : [];
+---
+
+<BaseLayout
+  title="Shop — Tardigrade Innovation"
+  description="Hardware kits, digital releases, and consulting hours from Tardigrade Innovation."
+>
+  {SHOP_LIVE ? (
+    <Section
+      id="shop"
+      index="§ 03 — AVAILABLE"
+      title="The {accent}."
+      titleAccent="shop"
+      blurb="Hardware kits, digital releases, and consulting hours. Built in Newport, shipped from Newport. Each item is what I actually use in the lab — not a re-skinned dropshipping catalogue."
+    >
+      <ShopTabs />
+      <div class="shop-grid">
+        {products.map((p) => <ProductCard product={p} />)}
+      </div>
+    </Section>
+  ) : (
+    <ShopComingSoon full />
+  )}
+</BaseLayout>
+
+<style>
+  .shop-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+  @media (max-width: 900px) { .shop-grid { grid-template-columns: 1fr; } }
+</style>

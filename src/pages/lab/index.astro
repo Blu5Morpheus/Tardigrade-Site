@@ -1,0 +1,23 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import DemoGrid from '../../components/DemoGrid.astro';
+
+const demos = (await getCollection('demos')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout
+  title="Lab — Tardigrade Innovation"
+  description="Live, runnable demonstrations of Tardigrade Innovation's research projects."
+>
+  <Section
+    id="lab"
+    index="§ 01 — INTERACTIVE"
+    title="The {accent}."
+    titleAccent="lab"
+    blurb="Live, runnable demonstrations of the projects below. Each opens a Streamlit instance with the full code, parameters, and visualisations exposed — no slides, no marketing copy, just the work."
+  >
+    <DemoGrid demos={demos} />
+  </Section>
+</BaseLayout>

@@ -1,0 +1,36 @@
+---
+interface Row {
+  label: string;
+  value: string;
+  kind?: 'ok' | 'warn' | 'default';
+}
+
+interface Props {
+  title?: string;
+  status?: string;
+  statusKind?: 'ok' | 'warn';
+  rows: Row[];
+  class?: string;
+}
+
+const {
+  title = '// LAB STATUS',
+  status = '● ALL SYSTEMS',
+  statusKind = 'ok',
+  rows,
+  class: classProp,
+} = Astro.props;
+---
+
+<div class:list={['panel', classProp]}>
+  <div class="panel-head">
+    <span>{title}</span>
+    <span class={statusKind}>{status}</span>
+  </div>
+  {rows.map((row) => (
+    <div class="panel-row">
+      <span>{row.label}</span>
+      <span class={row.kind ?? 'default'}>{row.value}</span>
+    </div>
+  ))}
+</div>

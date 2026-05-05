@@ -1,0 +1,181 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SHOP_LIVE, SITE } from '../../lib/config';
+import AntennaViz from '../../components/viz/AntennaViz.astro';
+import BlochViz from '../../components/viz/BlochViz.astro';
+import ScopeViz from '../../components/viz/ScopeViz.astro';
+import DiamondViz from '../../components/viz/DiamondViz.astro';
+import PreprintViz from '../../components/viz/PreprintViz.astro';
+import FlaskViz from '../../components/viz/FlaskViz.astro';
+
+export async function getStaticPaths() {
+  // Gated: when shop is live we generate detail routes; when gated, none.
+  if (!SHOP_LIVE) return [];
+  const products = await getCollection('products');
+  return products.map((product) => ({
+    params: { slug: product.slug },
+    props: { product },
+  }));
+}
+
+interface Props {
+  product: CollectionEntry<'products'>;
+}
+
+const { product } = Astro.props;
+const {
+  name,
+  nameAccent,
+  category,
+  categoryLabel,
+  blurb,
+  price,
+  priceUnit,
+  stripePaymentLink,
+  vizComponent,
+} = product.data;
+const { Content } = await product.render();
+
+const VizMap = {
+  AntennaViz,
+  BlochViz,
+  ScopeViz,
+  DiamondViz,
+  PreprintViz,
+  FlaskViz,
+} as const;
+const Viz = VizMap[vizComponent];
+
+const buyHref = stripePaymentLink ?? `mailto:${SITE.email}?subject=Order%20inquiry%3A%20${encodeURIComponent(name)}`;
+const buyLabel = category === 'service' ? 'Book a slot' : category === 'digital' ? 'Buy access' : 'Add to cart';
+---
+
+<BaseLayout
+  title={`${name}${nameAccent ? ` ${nameAccent}` : ''} — Tardigrade Shop`}
+  description={blurb}
+>
+  <article class="product-detail">
+    <div class="wrap">
+      <header class="product-header">
+        <div class="product-hero-img">
+          <Viz />
+        </div>
+        <div class="product-hero-meta">
+          <span class="index">{categoryLabel}</span>
+          <h1 class="product-hero-name">
+            {name}{nameAccent && <> <em>{nameAccent}</em></>}
+          </h1>
+          <p class="product-hero-blurb">{blurb}</p>
+          <div class="product-hero-buy">
+            <span class="product-hero-price">
+              {price}
+              {priceUnit && <small> {priceUnit}</small>}
+            </span>
+            <a href={buyHref} class="btn btn-primary" target={stripePaymentLink ? '_blank' : undefined} rel={stripePaymentLink ? 'noopener' : undefined}>
+              {buyLabel} <span class="arrow">→</span>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      <p class="back"><a href="/shop">← Back to shop</a></p>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .product-detail { padding: clamp(3rem, 6vw, 5rem) 0; }
+
+  .product-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 1px solid var(--rule);
+    align-items: center;
+  }
+  @media (max-width: 760px) {
+    .product-header { grid-template-columns: 1fr; }
+  }
+
+  .product-hero-img {
+    aspect-ratio: 4 / 3;
+    border: 1px solid var(--rule);
+    background: var(--ink-2);
+  }
+  .product-hero-img :global(svg) { width: 100%; height: 100%; display: block; }
+
+  .product-hero-meta { display: flex; flex-direction: column; gap: 1rem; }
+  .index {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--phosphor);
+  }
+  .product-hero-name {
+    font-family: var(--display);
+    font-weight: 300;
+    font-size: clamp(1.75rem, 4vw, 3rem);
+    line-height: 1.1;
+    color: var(--bone);
+  }
+  .product-hero-name em { font-style: italic; }
+  .product-hero-blurb {
+    font-family: var(--display);
+    color: var(--bone-dim);
+    font-size: 1.1rem;
+  }
+  .product-hero-buy {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .product-hero-price {
+    font-family: var(--mono);
+    font-size: 1.2rem;
+    color: var(--bone);
+    font-weight: 500;
+  }
+  .product-hero-price small { color: var(--bone-faint); font-weight: 400; font-size: 0.85rem; }
+
+  .prose {
+    max-width: 64ch;
+    font-family: var(--display);
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--bone);
+    font-weight: 300;
+  }
+  .prose :global(h2) {
+    font-family: var(--display);
+    font-style: italic;
+    font-weight: 400;
+    margin: 2rem 0 0.75rem;
+  }
+  .prose :global(p + p) { margin-top: 1.2em; }
+  .prose :global(strong) { color: var(--phosphor); font-weight: 400; }
+  .prose :global(ul) {
+    margin: 1em 0 1em 1.5em;
+    list-style: square;
+  }
+  .prose :global(li + li) { margin-top: 0.5em; }
+
+  .back {
+    margin-top: 3rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .back a { color: var(--bone-dim); }
+  .back a:hover { color: var(--phosphor); }
+</style>

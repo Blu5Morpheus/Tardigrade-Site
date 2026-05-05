@@ -1,0 +1,65 @@
+---
+interface Props {
+  id: string;
+  index: string;
+  /** Plain title — render `{accent}` placeholder as `<em>{titleAccent}</em>`. */
+  title: string;
+  titleAccent?: string;
+  blurb?: string;
+  background?: 'ink' | 'ink-2';
+  bordered?: boolean;
+  class?: string;
+}
+
+const {
+  id,
+  index,
+  title,
+  titleAccent,
+  blurb,
+  background = 'ink',
+  bordered = false,
+  class: classProp,
+} = Astro.props;
+
+// Split the title around the {accent} placeholder.
+const accentMatch = title.match(/^(.*?)\{accent\}(.*)$/);
+const titlePre = accentMatch ? accentMatch[1] : title;
+const titlePost = accentMatch ? accentMatch[2] : '';
+---
+
+<section
+  id={id}
+  class:list={[classProp, { 'sec-ink-2': background === 'ink-2', bordered }]}
+>
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="index">{index}</span>
+        <h2 class="display-section">
+          {accentMatch ? (
+            <>
+              {titlePre}
+              <em>{titleAccent}</em>
+              {titlePost}
+            </>
+          ) : (
+            title
+          )}
+        </h2>
+      </div>
+      {blurb && <p class="blurb">{blurb}</p>}
+    </div>
+    <slot />
+  </div>
+</section>
+
+<style>
+  .sec-ink-2 {
+    background: var(--ink-2);
+  }
+  .bordered {
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+</style>

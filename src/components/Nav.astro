@@ -1,0 +1,116 @@
+---
+import { NAV_ITEMS } from '../lib/nav';
+
+interface Props {
+  pathname?: string;
+}
+
+const { pathname = Astro.url.pathname } = Astro.props;
+
+function isActive(href: string): boolean {
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(href + '/');
+}
+---
+
+<nav class="top">
+  <div class="wrap">
+    <a href="/" class="brand" aria-label="Tardigrade Innovation home">
+      <span class="brand-dot" aria-hidden="true"></span>
+      TARDIGRADE / INNOVATION
+      <small>&nbsp;LLC</small>
+    </a>
+    <div class="navlinks">
+      {NAV_ITEMS.map((item) => (
+        <a
+          href={item.href}
+          class:list={['navlink', { active: isActive(item.href) }]}
+        >
+          {item.label}
+        </a>
+      ))}
+    </div>
+    <a href="/contact" class="nav-cta">Inquire →</a>
+  </div>
+</nav>
+
+<style>
+  nav.top {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(10, 13, 12, 0.78);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+  }
+  nav.top .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+  .brand {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+  .brand-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--phosphor);
+    box-shadow: 0 0 8px var(--phosphor), 0 0 16px rgba(126, 255, 159, 0.4);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.55; transform: scale(0.85); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .brand-dot { animation: none; }
+  }
+  .brand small { color: var(--bone-faint); font-weight: 400; }
+
+  .navlinks {
+    display: flex;
+    gap: 2rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+  }
+  .navlinks a {
+    color: var(--bone-dim);
+    transition: color 0.15s;
+    position: relative;
+  }
+  .navlinks a:hover,
+  .navlinks a.active { color: var(--bone); }
+  .navlinks a.active::before {
+    content: "→ ";
+    color: var(--phosphor);
+  }
+
+  .nav-cta {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid var(--rule);
+    padding: 0.55rem 0.95rem;
+    transition: all 0.18s;
+  }
+  .nav-cta:hover {
+    border-color: var(--phosphor);
+    color: var(--phosphor);
+    background: rgba(126, 255, 159, 0.04);
+  }
+
+  @media (max-width: 760px) {
+    .navlinks { display: none; }
+  }
+</style>

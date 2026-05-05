@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://portfolio-lab-v05x.onrender.com/sitemap-index.xml

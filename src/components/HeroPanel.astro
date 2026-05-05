@@ -1,0 +1,107 @@
+---
+import StatusPanel from './StatusPanel.astro';
+import { SITE } from '../lib/config';
+
+const labRows = [
+  { label: 'VQE / LIGO classifier', value: 'PREPRINT PENDING', kind: 'ok' as const },
+  { label: 'Clifford GA agent (Cl 3,1)', value: 'RUNNING', kind: 'ok' as const },
+  { label: 'NV-center MPCVD reactor', value: 'CALIBRATION', kind: 'warn' as const },
+  { label: 'L-band interferometer', value: 'OPERATIONAL', kind: 'ok' as const },
+  { label: 'Yb⁺ Paul trap', value: 'ASSEMBLY', kind: 'warn' as const },
+];
+---
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-meta">
+      <div><span class="label">Operator</span> <strong>{SITE.author}</strong></div>
+      <div><span class="label">Callsign</span> <strong>{SITE.callsign}</strong></div>
+      <div><span class="label">Field Site</span> <strong>{SITE.location}</strong></div>
+      <div><span class="label label-phos">● ONLINE</span></div>
+    </div>
+
+    <div class="hero-grid">
+      <div>
+        <h1 class="display-xl hero-title">
+          Quantum<br />
+          <span>field</span><br />
+          <span class="non-italic">notes from</span><br />
+          <span class="accent">Appalachia.</span>
+        </h1>
+      </div>
+      <div>
+        <p class="hero-sub">
+          An independent research lab building <strong>quantum machine learning</strong>,
+          <strong>gravitational-wave detection pipelines</strong>, and <strong>physics-constrained
+          embodied AI</strong> — alongside the hardware to run them.
+        </p>
+
+        <div class="hero-cta-row">
+          <a href="/lab" class="btn btn-primary">
+            Enter the lab <span class="arrow">→</span>
+          </a>
+          <a href="/research" class="btn btn-ghost">
+            Read the work
+          </a>
+        </div>
+
+        <StatusPanel rows={labRows} class="hero-status" />
+      </div>
+    </div>
+  </div>
+</header>
+
+<style>
+  .hero {
+    position: relative;
+    padding: clamp(4rem, 10vw, 8rem) 0 clamp(3rem, 6vw, 5rem);
+    overflow: hidden;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: end;
+  }
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; }
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .hero-meta div {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--bone-faint);
+  }
+  .hero-meta strong { color: var(--bone); font-weight: 500; }
+
+  .hero-title { color: var(--bone); }
+
+  .hero-sub {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(1.05rem, 1.35vw, 1.25rem);
+    line-height: 1.5;
+    color: var(--bone-dim);
+    max-width: 38ch;
+  }
+  .hero-sub strong { color: var(--bone); font-weight: 500; }
+
+  .hero-cta-row {
+    margin-top: 2.5rem;
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  :global(.hero-status) {
+    margin-top: 3rem;
+  }
+</style>

@@ -1,0 +1,26 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import DemoCard from './DemoCard.astro';
+
+interface Props {
+  demos: CollectionEntry<'demos'>[];
+}
+
+const { demos } = Astro.props;
+---
+
+<div class="lab-grid">
+  {demos.map((d) => (
+    <DemoCard demo={d} size={d.data.featured ? 'large' : 'small'} />
+  ))}
+</div>
+
+<style>
+  .lab-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+</style>

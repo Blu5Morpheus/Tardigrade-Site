@@ -1,0 +1,153 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroPanel from '../components/HeroPanel.astro';
+import Section from '../components/Section.astro';
+import DemoGrid from '../components/DemoGrid.astro';
+import PaperRow from '../components/PaperRow.astro';
+import ProductCard from '../components/ProductCard.astro';
+import ShopTabs from '../components/ShopTabs.astro';
+import ShopComingSoon from '../components/ShopComingSoon.astro';
+import AboutBlock from '../components/AboutBlock.astro';
+import StatusPanel from '../components/StatusPanel.astro';
+import { SHOP_LIVE, SITE } from '../lib/config';
+
+const demos = (await getCollection('demos')).sort((a, b) => a.data.order - b.data.order);
+const papers = (await getCollection('papers')).sort((a, b) => a.data.order - b.data.order);
+const products = (await getCollection('products')).sort((a, b) => a.data.order - b.data.order);
+
+const contactRows = [
+  { label: 'Email', value: SITE.emailDisplay },
+  { label: 'Signal', value: 'on request' },
+  { label: 'HAM', value: `${SITE.callsign} · 14.230 MHz` },
+  { label: 'Mail', value: 'Newport, TN 37821' },
+];
+---
+
+<BaseLayout>
+  <HeroPanel />
+
+  <Section
+    id="lab"
+    index="§ 01 — INTERACTIVE"
+    title="The {accent}."
+    titleAccent="lab"
+    blurb="Live, runnable demonstrations of the projects below. Each opens a Streamlit instance with the full code, parameters, and visualisations exposed — no slides, no marketing copy, just the work."
+  >
+    <DemoGrid demos={demos} />
+    <p class="see-all"><a href="/lab">View all demos →</a></p>
+  </Section>
+
+  <Section
+    id="research"
+    index="§ 02 — WRITTEN"
+    title="{accent} log."
+    titleAccent="Research"
+    blurb="Preprints, working drafts, and code releases. Most are independent; the VQE/LIGO work is a collaboration with a UCSB PhD candidate."
+    background="ink-2"
+    bordered
+  >
+    <div class="research-list">
+      {papers.map((p) => <PaperRow paper={p} />)}
+    </div>
+    <p class="see-all"><a href="/research">View all research →</a></p>
+  </Section>
+
+  {SHOP_LIVE ? (
+    <Section
+      id="shop"
+      index="§ 03 — AVAILABLE"
+      title="The {accent}."
+      titleAccent="shop"
+      blurb="Hardware kits, digital releases, and consulting hours. Built in Newport, shipped from Newport. Each item is what I actually use in the lab — not a re-skinned dropshipping catalogue."
+    >
+      <ShopTabs />
+      <div class="shop-grid">
+        {products.map((p) => <ProductCard product={p} />)}
+      </div>
+    </Section>
+  ) : (
+    <ShopComingSoon />
+  )}
+
+  <Section
+    id="about"
+    index="§ 04 — ORIGIN"
+    title="The {accent}."
+    titleAccent="operator"
+    blurb="Tardigrade Innovation is a one-person research lab in Newport, Tennessee — for now. The longer arc is to build a multi-modal physics institution in East Tennessee that protects the land and employs locally."
+  >
+    <AboutBlock />
+  </Section>
+
+  <Section
+    id="contact"
+    index="§ 05 — CHANNEL"
+    title="Get in {accent}."
+    titleAccent="touch"
+    blurb="For consulting, collaborations, press, or shop questions. I read every message. Replies inside 48 hours, usually faster."
+    background="ink-2"
+    bordered
+  >
+    <div class="contact-grid">
+      <div>
+        <StatusPanel
+          title="// DIRECT"
+          status="● OPEN"
+          rows={contactRows}
+        />
+        <a href={`mailto:${SITE.email}`} class="btn btn-primary contact-btn">
+          Compose message <span class="arrow">→</span>
+        </a>
+      </div>
+      <div>
+        <p class="contact-note">
+          For students and early-career researchers — yes, you can write to me cold.
+          I do my best to answer everyone, especially folks from rural and
+          first-generation backgrounds. Tell me what you're working on.
+        </p>
+      </div>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .see-all {
+    margin-top: 2rem;
+    text-align: right;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+  }
+  .see-all a {
+    color: var(--bone-dim);
+    text-transform: uppercase;
+  }
+  .see-all a:hover { color: var(--phosphor); }
+
+  .research-list { display: flex; flex-direction: column; }
+
+  .shop-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+  @media (max-width: 900px) { .shop-grid { grid-template-columns: 1fr; } }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+  @media (max-width: 760px) {
+    .contact-grid { grid-template-columns: 1fr; }
+  }
+  .contact-btn { margin-top: 1.5rem; }
+  .contact-note {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--bone);
+    font-weight: 300;
+  }
+</style>

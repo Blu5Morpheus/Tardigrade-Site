@@ -1,0 +1,55 @@
+---
+// Client-side filter for the shop grid. Toggles display:none on
+// product cards based on data-category. No framework — tiny inline script.
+---
+
+<div class="shop-tabs" role="tablist">
+  <button class="shop-tab active" data-cat="all" role="tab" aria-selected="true">All</button>
+  <button class="shop-tab" data-cat="hardware" role="tab" aria-selected="false">Hardware</button>
+  <button class="shop-tab" data-cat="digital" role="tab" aria-selected="false">Digital</button>
+  <button class="shop-tab" data-cat="service" role="tab" aria-selected="false">Services</button>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll<HTMLButtonElement>('.shop-tab');
+  const cards = () => document.querySelectorAll<HTMLElement>('.product[data-category]');
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const cat = tab.dataset.cat ?? 'all';
+      tabs.forEach((t) => {
+        t.classList.toggle('active', t === tab);
+        t.setAttribute('aria-selected', t === tab ? 'true' : 'false');
+      });
+      cards().forEach((card) => {
+        const c = card.dataset.category;
+        card.style.display = cat === 'all' || c === cat ? '' : 'none';
+      });
+    });
+  });
+</script>
+
+<style>
+  .shop-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--rule);
+    flex-wrap: wrap;
+  }
+  .shop-tab {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.85rem 1.25rem;
+    color: var(--bone-faint);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+  }
+  .shop-tab:hover { color: var(--bone-dim); }
+  .shop-tab.active {
+    color: var(--bone);
+    border-bottom-color: var(--phosphor);
+  }
+</style>

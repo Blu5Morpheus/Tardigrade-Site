@@ -1,0 +1,131 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import StreamlitFrame from '../../components/StreamlitFrame.astro';
+
+export async function getStaticPaths() {
+  const demos = await getCollection('demos');
+  return demos.map((demo) => ({
+    params: { slug: demo.slug },
+    props: { demo },
+  }));
+}
+
+interface Props {
+  demo: CollectionEntry<'demos'>;
+}
+
+const { demo } = Astro.props;
+const { title, titleAccent, blurb, tags, number, streamlitSlug } = demo.data;
+const { Content } = await demo.render();
+---
+
+<BaseLayout
+  title={`${title}${titleAccent ? ` ${titleAccent}` : ''} — Tardigrade Lab`}
+  description={blurb}
+>
+  <article class="lab-detail">
+    <div class="wrap">
+      <header class="demo-header">
+        <span class="index">§ DEMO / {number}</span>
+        <h1 class="display-section demo-title">
+          {title}{titleAccent && <> <em>{titleAccent}</em></>}
+        </h1>
+        <p class="lead">{blurb}</p>
+        <div class="demo-tags">
+          {tags.map((t) => <span class="tag">{t}</span>)}
+        </div>
+      </header>
+
+      <StreamlitFrame slug={streamlitSlug} title={title} />
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      <p class="back"><a href="/lab">← Back to lab</a></p>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .lab-detail {
+    padding: clamp(3rem, 6vw, 5rem) 0;
+  }
+  .demo-header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .index {
+    font-family: var(--mono);
+    color: var(--phosphor);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    margin-bottom: 0.8rem;
+    display: block;
+  }
+  .demo-title { margin-bottom: 1rem; }
+  .demo-title em { font-style: italic; font-weight: 300; }
+  .lead {
+    font-family: var(--display);
+    font-size: 1.15rem;
+    color: var(--bone-dim);
+    max-width: 60ch;
+    margin-bottom: 1rem;
+  }
+  .demo-tags {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .prose {
+    margin-top: 2.5rem;
+    max-width: 64ch;
+    font-family: var(--display);
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--bone);
+    font-weight: 300;
+  }
+  .prose :global(h2) {
+    font-family: var(--display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.6rem;
+    margin: 2.5rem 0 0.75rem;
+    color: var(--bone);
+  }
+  .prose :global(h3) {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--phosphor);
+    margin: 1.75rem 0 0.5rem;
+  }
+  .prose :global(p + p) { margin-top: 1.2em; }
+  .prose :global(strong) { color: var(--phosphor); font-weight: 400; }
+  .prose :global(code) {
+    font-family: var(--mono);
+    font-size: 0.92em;
+    background: var(--ink-2);
+    border: 1px solid var(--rule);
+    padding: 0.05em 0.4em;
+    color: var(--bone);
+  }
+  .prose :global(ul) {
+    margin: 1em 0 1em 1.5em;
+    list-style: square;
+  }
+  .prose :global(li + li) { margin-top: 0.5em; }
+  .back {
+    margin-top: 3rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .back a { color: var(--bone-dim); }
+  .back a:hover { color: var(--phosphor); }
+</style>

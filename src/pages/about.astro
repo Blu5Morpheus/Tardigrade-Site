@@ -1,0 +1,110 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import AboutBlock from '../components/AboutBlock.astro';
+---
+
+<BaseLayout
+  title="About — Raven Roberts"
+  description="Background, research direction, and the longer arc of Tardigrade Innovation."
+>
+  <Section
+    id="about"
+    index="§ 04 — ORIGIN"
+    title="The {accent}."
+    titleAccent="operator"
+    blurb="Tardigrade Innovation is a one-person research lab in Newport, Tennessee — for now. The longer arc is to build a multi-modal physics institution in East Tennessee that protects the land and employs locally."
+  >
+    <AboutBlock />
+
+    <div class="long-form">
+      <h2>Background</h2>
+      <p>
+        I started building computers and writing code with my father at age eight.
+        Began dual enrollment at thirteen, completing two associate degrees from
+        St. Petersburg College with a 3.89 GPA before moving to concurrent
+        enrollment at Harvard Extension School and Roane State Community College
+        — 4.0 GPAs at both.
+      </p>
+      <p>
+        Professional career started with two internships at Crayon — first remotely
+        from the US, then in person in Vienna for the summer of 2023. The Vienna
+        placement also gave me conversational German, adding to my existing English
+        and Russian. After Crayon, I joined Flomoney in Singapore as their founding
+        AI and robotics engineer, where I shipped a legal RAG chatbot, a humanoid
+        autonomous robot stack, and a sign language translation system across one
+        focused year.
+      </p>
+      <p>
+        Tardigrade Innovation LLC was founded in fall 2024 to give the work a proper
+        institutional home — a recognized entity for collaborative research, a
+        holder of patents, and the eventual seed of something larger.
+      </p>
+
+      <h2>Research direction</h2>
+      <p>
+        The active research threads include a variational quantum classifier for
+        LIGO gravitational-wave signals (collaborative work with a UCSB PhD candidate,
+        running on real IBM Quantum hardware, with an arXiv preprint in preparation),
+        a Clifford geometric algebra neural architecture with rotation and Lorentz
+        equivariance native to the representation, and exploratory work on lattice
+        gauge theory surrogates and amplituhedron geometry.
+      </p>
+      <p>
+        Alongside the computational work, I build the instruments. The lab in Newport
+        currently has seven active rigs in various states of operation, from an MPCVD
+        reactor for NV-center diamond growth to a 4-meter L-band radio interferometer
+        used for 21-cm hydrogen line observations and Crab Pulsar timing.
+      </p>
+
+      <h2>The Appalachian mission</h2>
+      <p>
+        The longer arc of my work is to build a multi-modal research institution
+        in East Tennessee — a privately founded laboratory that combines radio
+        astronomy, gravitational-wave instrumentation, and quantum materials science,
+        anchored to the land by intention rather than federal committee.
+        Green Bank, West Virginia, is the closest existing analog: a research site
+        whose presence has shaped land use, limited cell towers, and kept a particular
+        kind of quiet alive in the Potomac Highlands.
+      </p>
+      <p>
+        The mission has both scientific and political dimensions. A serious research
+        site in East Tennessee creates jobs that require real skills and can be
+        learned locally — welding, RF engineering, machining, software — without
+        requiring the people who fill them to leave the region. It also functions
+        as a kind of structural protection against the development pressure that's
+        been hollowing out Appalachia for a generation. A 500-acre radio quiet zone
+        with an active research institution on it cannot be rezoned for condominiums.
+      </p>
+      <p>
+        I am Appalachian by birth, and the long-term goal of my physics education
+        is to come back with the credentials and the tools to build something
+        permanent. The physics degree, the LIGO connections, the national lab
+        relationships — those are not an exit from Appalachia. They are the inputs
+        to a return.
+      </p>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .long-form {
+    margin-top: 4rem;
+    max-width: 64ch;
+    font-family: var(--display);
+    font-size: 1.1rem;
+    line-height: 1.65;
+    color: var(--bone);
+    font-weight: 300;
+  }
+  .long-form h2 {
+    font-family: var(--display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.6rem;
+    margin: 2.5rem 0 1rem;
+    color: var(--bone);
+  }
+  .long-form p + p { margin-top: 1.2em; }
+  .long-form strong { color: var(--phosphor); font-weight: 400; }
+</style>

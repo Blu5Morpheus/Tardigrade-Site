@@ -5,6 +5,15 @@ services:
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
     pullRequestPreviewsEnabled: true
+    envVars:
+      # Where the Streamlit lab lives. Flip this at migration time when
+      # the lab moves off the portfolio-lab-v05x hostname.
+      - key: PUBLIC_STREAMLIT_HOST
+        value: https://portfolio-lab-v05x.onrender.com
+      # Canonical site URL — used for og/canonical tags and sitemap.xml.
+      # Flip when the site moves to portfolio-lab-v05x.onrender.com.
+      - key: PUBLIC_SITE_URL
+        value: https://tardigrade-site.onrender.com
     headers:
       - path: /*
         name: X-Frame-Options

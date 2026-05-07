@@ -3,9 +3,17 @@ import tailwind from '@astrojs/tailwind';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
+// Canonical site URL for sitemap.xml + og/canonical tags. Override at
+// build time with PUBLIC_SITE_URL when migrating between Render
+// hostnames (see src/lib/config.ts).
+const SITE_URL =
+  process.env.PUBLIC_SITE_URL ||
+  process.env.SITE_URL ||
+  'https://tardigrade-site.onrender.com';
+
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://portfolio-lab-v05x.onrender.com',
+  site: SITE_URL,
   integrations: [
     tailwind({ applyBaseStyles: false }),
     mdx(),
@@ -16,7 +24,11 @@ export default defineConfig({
   },
   vite: {
     ssr: {
-      noExternal: ['@fontsource-variable/fraunces', '@fontsource/jetbrains-mono', '@fontsource/inter-tight'],
+      noExternal: [
+        '@fontsource/unifrakturcook',
+        '@fontsource/jetbrains-mono',
+        '@fontsource/inter-tight',
+      ],
     },
   },
 });

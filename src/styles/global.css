@@ -3,29 +3,48 @@
 @tailwind utilities;
 
 :root {
-  /* surfaces */
-  --ink:        #0a0d0c;
-  --ink-2:      #111614;
-  --ink-3:      #1a201d;
+  /* Cybergothic palette — backgrounds (deep violet-blacks) */
+  --bg-deep:        #0A0014;
+  --bg-panel:       #160028;
+  --bg-elevated:    #240046;
 
-  /* foreground */
-  --bone:       #e8e4d8;
-  --bone-dim:   #b8b3a4;
-  --bone-faint: #6a685e;
+  /* Brand violets */
+  --violet-deep:    #3C096C;
+  --violet-mid:     #6B2FBF;
+  --violet-bright:  #9D4EDD;
+  --violet-glow:    #C77DFF;
+  --violet-pale:    #E0AAFF;
 
-  /* accents — used surgically */
-  --phosphor:   #7eff9f;
-  --phosphor-d: #4cb86b;
-  --rust:       #c9543a;
-  --amber:      #e8b04c;
+  /* Iridescent accents — the "alive" colors */
+  --magenta-glow:   #FF77E6;
+  --pink-soft:      #FF8FD8;
+  --mint-rim:       #A7F3D0;
+  --mint-bright:    #86EFAC;
 
-  /* structural */
-  --rule:       #2a2f2c;
+  /* Text */
+  --ink-primary:    #F2E6FF;
+  --ink-secondary:  #C77DFF;
+  --ink-muted:      #9D4EDD;
+  --ink-dim:        #6B2FBF;
+
+  /* Legacy aliases — preserved so existing components keep rendering.
+     Each maps onto a cybergothic counterpart so the palette flips cleanly. */
+  --ink:        var(--bg-deep);
+  --ink-2:      var(--bg-panel);
+  --ink-3:      var(--bg-elevated);
+  --bone:       var(--ink-primary);
+  --bone-dim:   var(--ink-secondary);
+  --bone-faint: var(--ink-muted);
+  --phosphor:   var(--violet-glow);     /* primary accent */
+  --phosphor-d: var(--violet-mid);
+  --rust:       var(--magenta-glow);    /* electric pink CTA */
+  --amber:      var(--mint-rim);        /* iridescent rim */
+  --rule:       rgba(199, 125, 255, 0.18);
 
   /* type stacks */
-  --display:    "Fraunces Variable", "Fraunces", "Times New Roman", serif;
+  --display:    "UnifrakturCook", "Fraunces Variable", "Fraunces", "Times New Roman", serif;
   --mono:       "JetBrains Mono", ui-monospace, monospace;
-  --ui:         "Inter Tight", system-ui, sans-serif;
+  --ui:         "Inter Tight", "Inter", system-ui, sans-serif;
 
   /* layout */
   --max:        1380px;
@@ -35,8 +54,8 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
-  background: var(--ink);
-  color: var(--bone);
+  background: var(--bg-deep);
+  color: var(--ink-primary);
   font-family: var(--ui);
   font-weight: 400;
   line-height: 1.55;
@@ -45,7 +64,7 @@ body {
   min-height: 100vh;
 }
 
-/* CRT grain texture */
+/* CRT grain texture — violet-tinted */
 body::before {
   content: "";
   position: fixed; inset: 0;
@@ -53,8 +72,8 @@ body::before {
   z-index: 100;
   background-image: repeating-linear-gradient(
     0deg,
-    rgba(255,255,255,0.012) 0px,
-    rgba(255,255,255,0.012) 1px,
+    rgba(199, 125, 255, 0.018) 0px,
+    rgba(199, 125, 255, 0.018) 1px,
     transparent 1px,
     transparent 3px
   );
@@ -67,16 +86,16 @@ body::after {
   position: fixed; inset: 0;
   pointer-events: none;
   z-index: 99;
-  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.45) 100%);
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.55) 100%);
 }
 
 a { color: inherit; text-decoration: none; }
 button { background: none; border: none; color: inherit; cursor: pointer; font: inherit; }
 
-::selection { background: var(--phosphor); color: var(--ink); }
+::selection { background: var(--violet-glow); color: var(--bg-deep); }
 
 :focus-visible {
-  outline: 1px solid var(--phosphor);
+  outline: 1px solid var(--violet-glow);
   outline-offset: 2px;
 }
 
@@ -94,9 +113,9 @@ button { background: none; border: none; color: inherit; cursor: pointer; font: 
     font-weight: 500;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--bone-dim);
+    color: var(--ink-secondary);
   }
-  .label-phos { color: var(--phosphor); }
+  .label-phos { color: var(--violet-glow); }
 
   .btn {
     font-family: var(--mono);
@@ -109,24 +128,34 @@ button { background: none; border: none; color: inherit; cursor: pointer; font: 
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
+    color: var(--ink-primary);
   }
   .btn-primary {
-    background: var(--phosphor);
-    color: var(--ink);
-    border-color: var(--phosphor);
-    font-weight: 500;
+    background: var(--violet-bright);
+    color: var(--bg-deep);
+    border-color: var(--violet-bright);
+    font-weight: 600;
+    box-shadow: 0 0 24px -8px var(--violet-glow);
   }
-  .btn-primary:hover { background: transparent; color: var(--phosphor); }
-  .btn-ghost:hover { border-color: var(--bone); color: var(--bone); }
+  .btn-primary:hover {
+    background: var(--magenta-glow);
+    color: var(--bg-deep);
+    border-color: var(--magenta-glow);
+    box-shadow: 0 0 28px -6px var(--magenta-glow);
+  }
+  .btn-ghost { color: var(--ink-secondary); }
+  .btn-ghost:hover { border-color: var(--violet-glow); color: var(--violet-glow); }
   .btn .arrow { transition: transform 0.2s; }
   .btn:hover .arrow { transform: translateX(3px); }
 
   .panel {
-    border: 1px solid var(--rule);
-    background: linear-gradient(180deg, rgba(126, 255, 159, 0.025), transparent 60%);
+    border: 1px solid rgba(199, 125, 255, 0.15);
+    background: var(--bg-panel);
+    background-image: linear-gradient(180deg, rgba(199, 125, 255, 0.04), transparent 60%);
     padding: 1.5rem;
     font-family: var(--mono);
     font-size: 0.78rem;
+    color: var(--ink-primary);
   }
   .panel-head {
     display: flex; justify-content: space-between; align-items: center;
@@ -138,48 +167,49 @@ button { background: none; border: none; color: inherit; cursor: pointer; font: 
     display: flex;
     justify-content: space-between;
     padding: 0.45rem 0;
-    color: var(--bone-dim);
-    border-bottom: 1px dashed rgba(42, 47, 44, 0.6);
+    color: var(--ink-secondary);
+    border-bottom: 1px dashed rgba(199, 125, 255, 0.18);
   }
   .panel-row:last-child { border: none; }
-  .panel-row > span:last-child { color: var(--bone); }
-  .panel-row .ok { color: var(--phosphor); }
-  .panel-row .warn { color: var(--amber); }
+  .panel-row > span:last-child { color: var(--ink-primary); }
+  .panel-row .ok { color: var(--mint-rim); }
+  .panel-row .warn { color: var(--magenta-glow); }
 
   .tag {
     font-family: var(--mono);
     font-size: 0.66rem;
     letter-spacing: 0.08em;
-    color: var(--bone-faint);
-    border: 1px solid var(--rule);
+    color: var(--mint-rim);
+    background: rgba(167, 243, 208, 0.08);
+    border: 1px solid var(--mint-rim);
     padding: 0.22rem 0.55rem;
     text-transform: uppercase;
   }
 
-  /* display headlines */
+  /* display headlines — blackletter, no italics (UnifrakturCook is a single weight) */
   .display-xl {
     font-family: var(--display);
-    font-weight: 300;
-    font-style: italic;
+    font-weight: 700;
+    font-style: normal;
     font-size: clamp(3rem, 9vw, 7.5rem);
-    line-height: 0.92;
-    letter-spacing: -0.025em;
-    font-variation-settings: "SOFT" 50, "opsz" 144;
+    line-height: 0.98;
+    letter-spacing: -0.005em;
+    color: var(--ink-primary);
   }
-  .display-xl .non-italic { font-style: normal; font-weight: 400; }
-  .display-xl .accent { color: var(--phosphor); font-weight: 400; }
+  .display-xl .non-italic { font-style: normal; font-weight: 700; }
+  .display-xl .accent { color: var(--violet-glow); font-weight: 700; }
 
   .display-section {
     font-family: var(--display);
-    font-weight: 300;
-    font-style: italic;
+    font-weight: 700;
+    font-style: normal;
     font-size: clamp(2rem, 4.5vw, 3.5rem);
-    line-height: 1;
-    letter-spacing: -0.02em;
-    color: var(--bone);
+    line-height: 1.05;
+    letter-spacing: 0;
+    color: var(--ink-primary);
   }
   .display-section .non-italic { font-style: normal; }
-  .display-section em { font-weight: 300; }
+  .display-section em { font-weight: 700; font-style: normal; color: var(--violet-glow); }
 
   /* section primitive */
   .section-head {
@@ -193,18 +223,18 @@ button { background: none; border: none; color: inherit; cursor: pointer; font: 
   }
   .section-head .index {
     font-family: var(--mono);
-    color: var(--phosphor);
+    color: var(--violet-glow);
     font-size: 0.75rem;
     letter-spacing: 0.18em;
     margin-bottom: 0.8rem;
     display: block;
   }
   .section-head .blurb {
-    font-family: var(--display);
+    font-family: var(--ui);
     font-size: 1.05rem;
-    color: var(--bone-dim);
+    color: var(--ink-secondary);
     max-width: 50ch;
-    line-height: 1.5;
+    line-height: 1.55;
   }
 }
 

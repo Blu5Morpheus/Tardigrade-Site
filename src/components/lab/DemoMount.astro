@@ -1,0 +1,55 @@
+---
+/**
+ * Dispatch from a demo slug to the right React island. Slugs come from
+ * the `demos` content collection (src/content/demos/*.md); each one
+ * maps to a Modal-backed React island.
+ */
+import VqeLigoDemo from './VqeLigoDemo.tsx';
+import LatticeGaugeDemo from './LatticeGaugeDemo.tsx';
+import PageCurveDemo from './PageCurveDemo.tsx';
+import AmplituhedronDemo from './AmplituhedronDemo.tsx';
+import CliffordAgentDemo from './CliffordAgentDemo.tsx';
+import MeBotDemo from './MeBotDemo.tsx';
+
+interface Props {
+  slug: string;
+  title: string;
+  streamlitSlug?: string;
+}
+
+const { slug, title } = Astro.props;
+---
+
+{slug === 'vqe-ligo' && <VqeLigoDemo client:visible />}
+{slug === 'lattice-gauge' && <LatticeGaugeDemo client:visible />}
+{slug === 'page-curve' && <PageCurveDemo client:visible />}
+{slug === 'amplituhedron-explorer' && <AmplituhedronDemo client:visible />}
+{slug === 'clifford-agent' && <CliffordAgentDemo client:visible />}
+{slug === 'me-bot' && <MeBotDemo client:visible />}
+
+{
+  !['vqe-ligo', 'lattice-gauge', 'page-curve', 'amplituhedron-explorer', 'clifford-agent', 'me-bot'].includes(slug) && (
+    <div class="demo-pending">
+      <strong>{title}</strong> — no Modal binding for slug <code>{slug}</code>.
+      Add a mapping in <code>src/components/lab/DemoMount.astro</code>.
+    </div>
+  )
+}
+
+<style>
+  .demo-pending {
+    padding: 2rem;
+    border: 1px dashed var(--rule);
+    background: var(--ink-2);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--bone-dim);
+    text-align: center;
+  }
+  .demo-pending code {
+    background: var(--ink);
+    padding: 0.1em 0.4em;
+    border: 1px solid var(--rule);
+    color: var(--phosphor);
+  }
+</style>

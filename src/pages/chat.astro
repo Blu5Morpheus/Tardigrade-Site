@@ -1,8 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { STREAMLIT_HOST } from '../lib/config';
-
-const src = `${STREAMLIT_HOST}/?embed=true&demo=me-bot`;
+import MeBotDemo from '../components/lab/MeBotDemo.tsx';
 ---
 
 <BaseLayout
@@ -21,18 +19,7 @@ const src = `${STREAMLIT_HOST}/?embed=true&demo=me-bot`;
     </header>
 
     <div class="chat-frame">
-      <div class="chat-loading" data-loading>
-        <span class="chat-loading-dot"></span>
-        <span class="chat-loading-text">WARMING UP THE ASSISTANT…</span>
-      </div>
-      <iframe
-        src={src}
-        title="Ask the lab"
-        loading="lazy"
-        allow="clipboard-write"
-        referrerpolicy="no-referrer"
-        onload="this.parentElement?.querySelector('[data-loading]')?.setAttribute('hidden','')"
-      ></iframe>
+      <MeBotDemo client:visible />
     </div>
 
     <p class="chat-disclaimer">

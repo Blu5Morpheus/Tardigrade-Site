@@ -1,7 +1,7 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import StreamlitFrame from '../../components/StreamlitFrame.astro';
+import DemoMount from '../../components/lab/DemoMount.astro';
 
 export async function getStaticPaths() {
   const demos = await getCollection('demos');
@@ -37,7 +37,7 @@ const { Content } = await demo.render();
         </div>
       </header>
 
-      <StreamlitFrame slug={streamlitSlug} title={title} />
+      <DemoMount slug={demo.slug} title={title} streamlitSlug={streamlitSlug} />
 
       <div class="prose">
         <Content />

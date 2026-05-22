@@ -40,18 +40,35 @@ export const SITE = {
 export const SHOP_LIVE = false;
 
 /**
- * Streamlit demo host. The public Streamlit instance is currently at
- * `portfolio-lab-v05x.onrender.com` (the original lab deployment). At
- * migration time the lab moves to a new hostname and this value flips.
- *
- * Override at build time with
- *   `PUBLIC_STREAMLIT_HOST=https://tardigrade-lab.onrender.com`
- * (no trailing slash).
+ * Streamlit admin host. Public demos no longer run on Streamlit — they
+ * are React islands talking to Modal endpoints (see MODAL below). This
+ * value is retained for the admin panel only, which stays on Streamlit
+ * for now (see LAB_AND_ADMIN_SPEC.md).
  */
 export const STREAMLIT_HOST = env(
   'STREAMLIT_HOST',
   'https://portfolio-lab-v05x.onrender.com',
 );
+
+/**
+ * Modal backend endpoints — one per demo. Each is a FastAPI ASGI app
+ * deployed by `modal deploy tardigrade_modal.<name>` (see the
+ * `tardigrade-modal` repo). The URL pattern is
+ *   https://<workspace>--<app-name>-fastapi-app.modal.run
+ * Override per-environment with PUBLIC_MODAL_<NAME>.
+ *
+ * Until each app is deployed, the corresponding URL is null and the
+ * demo's React island shows a "deployment pending" placeholder rather
+ * than a fetch error.
+ */
+export const MODAL = {
+  vqe: env('MODAL_VQE', 'https://blu5morpheus--tardigrade-vqe-fastapi-app.modal.run'),
+  lattice: env('MODAL_LATTICE', 'https://blu5morpheus--tardigrade-lattice-fastapi-app.modal.run'),
+  pageCurve: env('MODAL_PAGE_CURVE', 'https://blu5morpheus--tardigrade-page-curve-fastapi-app.modal.run'),
+  amplituhedron: env('MODAL_AMPLITUHEDRON', 'https://blu5morpheus--tardigrade-amplituhedron-fastapi-app.modal.run'),
+  clifford: env('MODAL_CLIFFORD', 'https://blu5morpheus--tardigrade-clifford-fastapi-app.modal.run'),
+  mebot: env('MODAL_MEBOT', 'https://blu5morpheus--tardigrade-mebot-fastapi-app.modal.run'),
+} as const;
 
 /**
  * Formspree form IDs. See LAUNCH_CHECKLIST.md.

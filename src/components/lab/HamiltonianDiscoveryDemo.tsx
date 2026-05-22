@@ -1,29 +1,44 @@
 /**
  * Hamiltonian Discovery — HNN training + symbolic distillation.
  *
- * Flow: pick a system → /train → see loss curve + learned-vs-true H
- * heatmaps + energy drift along a held-out trajectory → /distill →
- * see the recovered polynomial equation next to the ground truth.
+ * Two modes:
+ *   "Benchmark"  → pick a known system (SHO / Duffing / Hénon-Heiles),
+ *                  the server generates trajectories + ground truth.
+ *   "Your data"  → paste a CSV / JSON trajectory OR drop a file; the
+ *                  server computes finite-difference velocities and
+ *                  trains an HNN on it. Distill works the same way.
+ *
+ * CSV layout (no header required, comma-separated):
+ *   1-DoF:  q, p                  → dim = 1
+ *   2-DoF:  x, y, p_x, p_y        → dim = 2
+ *   3-DoF:  q1..q3, p1..p3        → dim = 3
+ * If you already have velocities, use states + targets via the JSON form
+ * (same width: 2*dim columns each, equal length).
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { MODAL } from '../../lib/config';
 import { jsonPost } from '../../lib/modal-client';
 import DemoFrame, { type DemoStatus } from './DemoFrame';
 
 type System = 'sho' | 'duffing' | 'henon';
+type Mode = 'benchmark' | 'custom';
 
 interface TrainResp {
   cache_key: string;
-  system: System;
-  system_info: { name: string; dim: number; true_H_str: string };
+  system: System | 'custom';
+  system_info?: { name: string; dim: number; true_H_str: string };
   history: { epoch: number; loss: number }[];
   phase_axes: { q: number[]; p: number[] };
   learned_H: number[][];
-  true_H: number[][];
+  true_H: number[][] | null;
   energy_drift: number[];
   energy_drift_t: number[];
   final_loss: number | null;
+  label?: string;
+  dim?: number;
+  n_samples?: number;
+  span?: number;
 }
 
 interface DistillResp {
@@ -44,6 +59,7 @@ const SYSTEM_LABEL: Record<System, string> = {
 };
 
 export default function HamiltonianDiscoveryDemo() {
+  const [mode, setMode] = useState<Mode>('benchmark');
   const [system, setSystem] = useState<System>('sho');
   const [hidden, setHidden] = useState(64);
   const [epochs, setEpochs] = useState(60);
@@ -53,27 +69,89 @@ export default function HamiltonianDiscoveryDemo() {
   const [maxDegree, setMaxDegree] = useState(4);
   const [alpha, setAlpha] = useState(0.001);
 
+  // Custom data controls
+  const [customDim, setCustomDim] = useState(1);
+  const [customDt, setCustomDt] = useState(0.05);
+  const [customRaw, setCustomRaw] = useState('');
+  const [customLabel, setCustomLabel] = useState('user-data');
+
   const [status, setStatus] = useState<DemoStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const [trainResp, setTrainResp] = useState<TrainResp | null>(null);
   const [distillResp, setDistillResp] = useState<DistillResp | null>(null);
   const [distillBusy, setDistillBusy] = useState(false);
 
+  // Parse user input — CSV or JSON. Returns parsed trajectory (T, 2*dim)
+  // or throws a helpful error.
+  const parseCustom = (raw: string, dim: number): number[][] => {
+    const trimmed = raw.trim();
+    if (!trimmed) throw new Error('Paste or upload a trajectory first.');
+    let rows: number[][];
+    if (trimmed.startsWith('[')) {
+      const parsed = JSON.parse(trimmed);
+      if (!Array.isArray(parsed) || !Array.isArray(parsed[0])) {
+        throw new Error('JSON must be a 2-D array: [[q,p], [q,p], …].');
+      }
+      rows = parsed.map((r: unknown[]) => r.map((v) => Number(v)));
+    } else {
+      rows = trimmed.split(/\r?\n/).filter((l) => l.trim() && !/^\s*#/.test(l)).map((line) => {
+        const parts = line.split(/[,\s\t]+/).filter((p) => p.length).map(Number);
+        return parts;
+      });
+    }
+    if (!rows.length) throw new Error('No data rows parsed.');
+    const expected = 2 * dim;
+    const ok = rows.every((r) => r.length === expected && r.every((v) => Number.isFinite(v)));
+    if (!ok) throw new Error(`Each row needs exactly ${expected} numeric columns (q, p) for dim = ${dim}.`);
+    return rows;
+  };
+
+  const sampleCsv = useMemo(() => {
+    // a sample SHO trajectory the user can paste-test with
+    const N = 60;
+    const lines = ['# Sample 1-DoF SHO trajectory: cos(t), -sin(t).',
+                   '# Two columns: q, p'];
+    for (let i = 0; i < N; i++) {
+      const t = (i / N) * 4 * Math.PI;
+      lines.push(`${Math.cos(t).toFixed(4)}, ${(-Math.sin(t)).toFixed(4)}`);
+    }
+    return lines.join('\n');
+  }, []);
+
   const runTrain = async () => {
     setStatus('loading');
     setError(null);
     setDistillResp(null);
     try {
-      const r = await jsonPost<TrainResp>(ENDPOINT, '/train', {
-        system, hidden, epochs, n_traj: nTraj, lr, seed,
-        t_max: 8.0, dt: 0.05, batch_size: 128,
-      });
+      let r: TrainResp;
+      if (mode === 'benchmark') {
+        r = await jsonPost<TrainResp>(ENDPOINT, '/train', {
+          system, hidden, epochs, n_traj: nTraj, lr, seed,
+          t_max: 8.0, dt: 0.05, batch_size: 128,
+        });
+      } else {
+        const trajectory = parseCustom(customRaw, customDim);
+        r = await jsonPost<TrainResp>(ENDPOINT, '/train_custom', {
+          dim: customDim,
+          trajectory,
+          dt: customDt,
+          hidden, epochs, lr, seed,
+          batch_size: 128,
+          label: customLabel || 'user-data',
+        });
+      }
       setTrainResp(r);
       setStatus('done');
     } catch (e) {
       setError((e as Error).message);
       setStatus('error');
     }
+  };
+
+  const handleFile = async (f: File) => {
+    const text = await f.text();
+    setCustomRaw(text);
+    setCustomLabel(f.name.replace(/\.[^.]+$/, ''));
   };
 
   const runDistill = async () => {
@@ -102,19 +180,69 @@ export default function HamiltonianDiscoveryDemo() {
       status={status}
       error={error}
     >
+      <div className="hnn-mode">
+        {(['benchmark', 'custom'] as Mode[]).map((m) => (
+          <button key={m} type="button"
+                  className={`hnn-mode-btn ${mode === m ? 'active' : ''}`}
+                  onClick={() => { setMode(m); setTrainResp(null); setDistillResp(null); setError(null); setStatus('idle'); }}>
+            {m === 'benchmark' ? 'Benchmark system' : 'Your data'}
+          </button>
+        ))}
+      </div>
+
       <div className="hnn-grid">
         <div className="hnn-controls">
-          <Field label="System">
-            <select value={system} onChange={(e) => setSystem(e.target.value as System)}>
-              <option value="sho">{SYSTEM_LABEL.sho}</option>
-              <option value="duffing">{SYSTEM_LABEL.duffing}</option>
-              <option value="henon">{SYSTEM_LABEL.henon}</option>
-            </select>
-          </Field>
-          <Field label={`Trajectories = ${nTraj}`}>
-            <input type="range" min={10} max={120} value={nTraj}
-                   onChange={(e) => setNTraj(Number(e.target.value))} />
-          </Field>
+          {mode === 'benchmark' ? (
+            <>
+              <Field label="System">
+                <select value={system} onChange={(e) => setSystem(e.target.value as System)}>
+                  <option value="sho">{SYSTEM_LABEL.sho}</option>
+                  <option value="duffing">{SYSTEM_LABEL.duffing}</option>
+                  <option value="henon">{SYSTEM_LABEL.henon}</option>
+                </select>
+              </Field>
+              <Field label={`Trajectories = ${nTraj}`}>
+                <input type="range" min={10} max={120} value={nTraj}
+                       onChange={(e) => setNTraj(Number(e.target.value))} />
+              </Field>
+            </>
+          ) : (
+            <>
+              <Field label="Degrees of freedom (dim)">
+                <select value={customDim} onChange={(e) => setCustomDim(Number(e.target.value))}>
+                  <option value={1}>1 (q, p)</option>
+                  <option value={2}>2 (q₁,q₂, p₁,p₂)</option>
+                  <option value={3}>3 (q₁..q₃, p₁..p₃)</option>
+                </select>
+              </Field>
+              <Field label="dt between samples">
+                <input type="number" step={0.005} min={0.001} max={1.0} value={customDt}
+                       onChange={(e) => setCustomDt(Number(e.target.value))} />
+              </Field>
+              <Field label="Label">
+                <input type="text" value={customLabel}
+                       onChange={(e) => setCustomLabel(e.target.value)}
+                       placeholder="e.g. pendulum_run_03" />
+              </Field>
+              <Field label="Trajectory (CSV or JSON)">
+                <textarea
+                  value={customRaw}
+                  onChange={(e) => setCustomRaw(e.target.value)}
+                  placeholder={`Rows of ${2 * customDim} comma-separated numbers,\nor a JSON [[...], [...]].`}
+                  rows={6}
+                  className="hnn-textarea"
+                />
+              </Field>
+              <Field label="…or upload a file">
+                <input type="file" accept=".csv,.txt,.json,.tsv"
+                       onChange={(e) => e.target.files && handleFile(e.target.files[0])} />
+              </Field>
+              <button type="button" className="hnn-btn hnn-btn-ghost"
+                      onClick={() => { setCustomRaw(sampleCsv); setCustomDim(1); setCustomLabel('sample-sho'); }}>
+                Load sample SHO data
+              </button>
+            </>
+          )}
           <Field label={`Hidden = ${hidden}`}>
             <input type="range" min={16} max={128} step={16} value={hidden}
                    onChange={(e) => setHidden(Number(e.target.value))} />
@@ -133,7 +261,9 @@ export default function HamiltonianDiscoveryDemo() {
           </Field>
           <button type="button" className="hnn-btn"
                   disabled={status === 'loading'} onClick={runTrain}>
-            {status === 'loading' ? 'Training HNN…' : 'Train HNN'}
+            {status === 'loading'
+              ? 'Training HNN…'
+              : mode === 'benchmark' ? 'Train HNN' : 'Train on your data'}
           </button>
 
           {trainResp && (
@@ -159,18 +289,33 @@ export default function HamiltonianDiscoveryDemo() {
           {trainResp ? (
             <>
               <div className="hnn-metrics">
-                <Metric label="System" value={SYSTEM_LABEL[trainResp.system]} />
+                <Metric label="System"
+                        value={trainResp.system === 'custom'
+                          ? (trainResp.label ?? 'custom')
+                          : (SYSTEM_LABEL[trainResp.system as System] ?? trainResp.system)} />
                 <Metric label="Final loss"
                         value={trainResp.final_loss != null
                           ? trainResp.final_loss.toExponential(2) : '—'} />
-                <Metric label="Truth" value={trainResp.system_info.true_H_str} mono />
+                {trainResp.system_info?.true_H_str && (
+                  <Metric label="Truth" value={trainResp.system_info.true_H_str} mono />
+                )}
+                {trainResp.n_samples != null && (
+                  <Metric label="Samples" value={String(trainResp.n_samples)} />
+                )}
               </div>
 
               <LossChart history={trainResp.history} />
 
               <div className="hnn-heatmap-row">
                 <HeatPanel label="Learned H_θ" axes={trainResp.phase_axes} data={trainResp.learned_H} />
-                <HeatPanel label="True H" axes={trainResp.phase_axes} data={trainResp.true_H} />
+                {trainResp.true_H != null ? (
+                  <HeatPanel label="True H" axes={trainResp.phase_axes} data={trainResp.true_H as number[][]} />
+                ) : (
+                  <div className="hnn-empty" style={{ minHeight: 120 }}>
+                    No ground-truth H — discovered from data.
+                    <br /><em>Distill below to see the symbolic form.</em>
+                  </div>
+                )}
               </div>
 
               <EnergyDriftChart trace={trainResp.energy_drift} t={trainResp.energy_drift_t} />
@@ -255,7 +400,7 @@ function LossChart({ history }: { history: { epoch: number; loss: number }[] }) 
   );
 }
 
-function EnergyDriftChart({ trace, t }: { trace: number[]; t: number[] }) {
+function EnergyDriftChart({ trace }: { trace: number[]; t: number[] }) {
   const W = 560; const H = 140; const pad = 40;
   if (!trace.length) return null;
   const lo = Math.min(...trace), hi = Math.max(...trace);
@@ -309,9 +454,31 @@ function HeatPanel({ label, axes, data }: { label: string; axes: { q: number[]; 
 function Styles() {
   return (
     <style>{`
-      .hnn-grid { display: grid; grid-template-columns: minmax(220px,280px) 1fr; gap: 1.5rem; }
+      .hnn-mode {
+        display: flex; gap: 0.25rem;
+        border-bottom: 1px solid var(--rule); margin-bottom: 1rem;
+      }
+      .hnn-mode-btn {
+        background: none; border: 0; padding: 0.5rem 0.9rem;
+        font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.1em;
+        text-transform: uppercase; color: var(--bone-dim); cursor: pointer;
+        border-bottom: 2px solid transparent;
+      }
+      .hnn-mode-btn.active { color: var(--phosphor); border-bottom-color: var(--phosphor); }
+      .hnn-grid { display: grid; grid-template-columns: minmax(240px,300px) 1fr; gap: 1.5rem; }
       @media (max-width: 760px) { .hnn-grid { grid-template-columns: 1fr; } }
       .hnn-controls { display: flex; flex-direction: column; gap: 0.75rem; }
+      .hnn-textarea {
+        background: var(--ink); color: var(--bone);
+        border: 1px solid var(--rule); padding: 0.4rem 0.5rem;
+        font-family: var(--mono); font-size: 0.78rem; resize: vertical;
+        min-height: 90px; max-height: 240px;
+      }
+      .hnn-btn-ghost {
+        background: transparent; color: var(--bone-dim);
+        border: 1px solid var(--rule);
+      }
+      .hnn-btn-ghost:hover { color: var(--phosphor); border-color: var(--phosphor); }
       .hnn-divider { height: 1px; background: var(--rule); margin: 0.5rem 0; }
       .hnn-field { display: flex; flex-direction: column; gap: 0.25rem; }
       .hnn-field-label {

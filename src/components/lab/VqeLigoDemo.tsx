@@ -136,9 +136,15 @@ export default function VqeLigoDemo() {
           if (eventName === 'data_source') {
             const label = d.source as string;
             const events = (d.real_events_in_fixture as number) ?? 0;
-            setResolvedSource(events > 0
-              ? `${label} · ${events} real events`
-              : label);
+            // honest labelling — PyCBC means BBH waveforms generated from
+            // numerical relativity templates, not actual O3 detector strain.
+            // We'll show the literal source string from the backend.
+            const friendly =
+              label === 'gwosc-real-o3' ? `GWOSC O3 (real) · ${events} events`
+              : label === 'synthetic-pycbc' ? 'PyCBC IMRPhenomD (templates)'
+              : label === 'inline-sine-sweep' ? 'Inline sine-sweep (toy)'
+              : label;
+            setResolvedSource(friendly);
           } else if (eventName === 'baseline') {
             setStabilizerBaseline(d.stabilizer_accuracy as number);
             setStatus('streaming');
@@ -255,8 +261,8 @@ export default function VqeLigoDemo() {
             <Field label="Data source">
               <select value={dataSource}
                       onChange={(e) => setDataSource(e.target.value as 'real' | 'synthetic')}>
-                <option value="real">GWOSC O3 (real LIGO)</option>
-                <option value="synthetic">PyCBC synthetic</option>
+                <option value="real">PyCBC IMRPhenomD templates (high fidelity)</option>
+                <option value="synthetic">Inline sine-sweep (fast)</option>
               </select>
             </Field>
             <Field label="Depth (Clifford+T layers)">

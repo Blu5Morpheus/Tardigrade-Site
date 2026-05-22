@@ -70,6 +70,8 @@ export default function VqeLigoDemo() {
   const [lr, setLr] = useState(0.05);
   const [epochs, setEpochs] = useState(15);
   const [seed, setSeed] = useState(42);
+  const [dataSource, setDataSource] = useState<'real' | 'synthetic'>('real');
+  const [resolvedSource, setResolvedSource] = useState<string | null>(null);
 
   // ── live training state
   const [status, setStatus] = useState<DemoStatus>('idle');
@@ -113,6 +115,7 @@ export default function VqeLigoDemo() {
     setHistory([]);
     setStabilizerBaseline(null);
     setFinalAcc(null);
+    setResolvedSource(null);
     cancelRef.current = sseStream(
       ENDPOINT,
       '/train_stream',
@@ -125,11 +128,18 @@ export default function VqeLigoDemo() {
         lr,
         epochs,
         seed,
+        data_source: dataSource,
       },
       {
         onEvent: (eventName, data) => {
           const d = data as Record<string, unknown>;
-          if (eventName === 'baseline') {
+          if (eventName === 'data_source') {
+            const label = d.source as string;
+            const events = (d.real_events_in_fixture as number) ?? 0;
+            setResolvedSource(events > 0
+              ? `${label} · ${events} real events`
+              : label);
+          } else if (eventName === 'baseline') {
             setStabilizerBaseline(d.stabilizer_accuracy as number);
             setStatus('streaming');
           } else if (eventName === 'epoch') {
@@ -242,6 +252,13 @@ export default function VqeLigoDemo() {
                 <option value={4}>4 (BBH / BNS / ECO / Beyond-GR)</option>
               </select>
             </Field>
+            <Field label="Data source">
+              <select value={dataSource}
+                      onChange={(e) => setDataSource(e.target.value as 'real' | 'synthetic')}>
+                <option value="real">GWOSC O3 (real LIGO)</option>
+                <option value="synthetic">PyCBC synthetic</option>
+              </select>
+            </Field>
             <Field label="Depth (Clifford+T layers)">
               <input type="range" min={1} max={6} value={depth}
                      onChange={(e) => setDepth(Number(e.target.value))} />
@@ -292,6 +309,7 @@ export default function VqeLigoDemo() {
               targetEpochs={epochs}
             />
             <div className="vqe-metrics">
+              <Metric label="Data" value={resolvedSource ?? '—'} />
               <Metric label="Stabilizer baseline (θ=0)" value={stabilizerBaseline != null
                 ? `${(stabilizerBaseline * 100).toFixed(1)}%` : '—'} />
               <Metric label="Latest loss" value={history.length

@@ -8,7 +8,8 @@ import VqeLigoDemo from './VqeLigoDemo.tsx';
 import LatticeGaugeDemo from './LatticeGaugeDemo.tsx';
 import PageCurveDemo from './PageCurveDemo.tsx';
 import AmplituhedronDemo from './AmplituhedronDemo.tsx';
-import CliffordAgentDemo from './CliffordAgentDemo.tsx';
+import PlasmaMHDDemo from './PlasmaMHDDemo.tsx';
+import HamiltonianDiscoveryDemo from './HamiltonianDiscoveryDemo.tsx';
 import MeBotDemo from './MeBotDemo.tsx';
 
 interface Props {
@@ -18,17 +19,23 @@ interface Props {
 }
 
 const { slug, title } = Astro.props;
+
+const KNOWN = [
+  'vqe-ligo', 'lattice-gauge', 'page-curve', 'amplituhedron-explorer',
+  'plasma-mhd', 'hamiltonian-discovery', 'me-bot',
+];
 ---
 
 {slug === 'vqe-ligo' && <VqeLigoDemo client:visible />}
 {slug === 'lattice-gauge' && <LatticeGaugeDemo client:visible />}
 {slug === 'page-curve' && <PageCurveDemo client:visible />}
 {slug === 'amplituhedron-explorer' && <AmplituhedronDemo client:visible />}
-{slug === 'clifford-agent' && <CliffordAgentDemo client:visible />}
+{slug === 'plasma-mhd' && <PlasmaMHDDemo client:visible />}
+{slug === 'hamiltonian-discovery' && <HamiltonianDiscoveryDemo client:visible />}
 {slug === 'me-bot' && <MeBotDemo client:visible />}
 
 {
-  !['vqe-ligo', 'lattice-gauge', 'page-curve', 'amplituhedron-explorer', 'clifford-agent', 'me-bot'].includes(slug) && (
+  !KNOWN.includes(slug) && (
     <div class="demo-pending">
       <strong>{title}</strong> — no Modal binding for slug <code>{slug}</code>.
       Add a mapping in <code>src/components/lab/DemoMount.astro</code>.

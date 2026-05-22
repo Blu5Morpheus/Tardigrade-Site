@@ -19,6 +19,8 @@ type Resp = {
   n_page: number;
   focus_n: number;
   focus_spectrum: number[];
+  focus_spectra?: Record<string, number[]>;
+  per_realization?: Record<string, number[]>;
 };
 
 const ENDPOINT = MODAL.pageCurve;
@@ -99,6 +101,9 @@ export default function PageCurveDemo() {
             <>
               <CurveChart resp={resp} />
               <SpectrumChart eigs={resp.focus_spectrum} focusN={resp.focus_n} />
+              {resp.per_realization && Object.keys(resp.per_realization).length > 0 && (
+                <EntropyHistogram per={resp.per_realization} focusN={resp.focus_n} N={resp.N} />
+              )}
             </>
           ) : (
             <div className="pc-empty">Pick a system size and press <strong>Compute curves</strong>.</div>
@@ -175,6 +180,68 @@ function SpectrumChart({ eigs, focusN }: { eigs: number[]; focusN: number }) {
       <text x={W / 2} y={H - 6} fontFamily="var(--mono)" fontSize="10" fill="var(--bone-dim)"
             textAnchor="middle">rank  ·  log₁₀ eigenvalue · ρ_A at n = {focusN}</text>
     </svg>
+  );
+}
+
+function EntropyHistogram({ per, focusN, N }: { per: Record<string, number[]>; focusN: number; N: number }) {
+  const W = 520; const H = 180; const pad = 36;
+  const maxEnt = Math.min(focusN, N - focusN);
+  const nBins = maxEnt + 1;            // integer-bin Clifford
+  const binW = (W - 2 * pad) / nBins;
+
+  const models = Object.keys(per);
+  // count entries per integer bucket (rounded)
+  const counts: Record<string, number[]> = {};
+  let maxCount = 1;
+  for (const m of models) {
+    const bins = Array(nBins).fill(0);
+    for (const v of per[m]) {
+      const b = Math.min(nBins - 1, Math.max(0, Math.round(v)));
+      bins[b] += 1;
+    }
+    counts[m] = bins;
+    maxCount = Math.max(maxCount, ...bins);
+  }
+  const COLOR: Record<string, string> = {
+    haar: 'var(--phosphor)',
+    clifford: 'var(--violet-glow, #b08dff)',
+  };
+  return (
+    <div>
+      <p style={{ fontFamily: 'var(--mono)', fontSize: '0.72rem',
+                  letterSpacing: '0.08em', color: 'var(--bone-dim)', margin: '0 0 0.3rem' }}>
+        S(ρ_A) histogram at n = {focusN} — Clifford clusters at integer bits;
+        Haar smears continuously
+      </p>
+      <svg className="pc-curve" viewBox={`0 0 ${W} ${H}`}>
+        <line x1={pad} y1={H - pad} x2={W - pad} y2={H - pad} stroke="var(--rule)" />
+        <line x1={pad} y1={pad} x2={pad} y2={H - pad} stroke="var(--rule)" />
+        {Array.from({ length: nBins }).map((_, i) => (
+          <text key={`tick-${i}`} x={pad + (i + 0.5) * binW} y={H - pad + 12}
+                fontFamily="var(--mono)" fontSize="9" fill="var(--bone-dim)" textAnchor="middle">
+            {i}
+          </text>
+        ))}
+        {models.map((m, mi) => counts[m].map((c, i) => {
+          if (c === 0) return null;
+          const h = (c / maxCount) * (H - 2 * pad);
+          const offset = mi * (binW / models.length);
+          const w = binW / models.length - 1;
+          return (
+            <rect key={`${m}-${i}`}
+                  x={pad + i * binW + offset} y={H - pad - h}
+                  width={w} height={h}
+                  fill={COLOR[m] ?? 'var(--bone)'} opacity={0.75} />
+          );
+        }))}
+        <text x={W - pad} y={pad + 10} fontFamily="var(--mono)" fontSize="10"
+              fill="var(--bone-dim)" textAnchor="end">
+          {models.map((m, i) => (
+            <tspan key={m} dx={i > 0 ? 12 : 0} fill={COLOR[m] ?? 'var(--bone)'}>— {m}</tspan>
+          ))}
+        </text>
+      </svg>
+    </div>
   );
 }
 

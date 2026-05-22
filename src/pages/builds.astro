@@ -1,0 +1,302 @@
+---
+/**
+ * Hardware builds — video showcase. Two ongoing benchtop projects:
+ * the memristor demo and the radio telescope. Videos are in post, so
+ * slots show an "EDITING NOW · see u soon" stamp where the embed will
+ * land once footage is up.
+ *
+ * When a video lands, set the `videoUrl` on the corresponding build
+ * entry (YouTube watch URL or mp4). The slot will swap automatically.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+interface Build {
+  slug: string;
+  number: string;
+  title: string;
+  titleAccent?: string;
+  blurb: string;
+  detail: string;
+  tags: string[];
+  videoUrl?: string;        // YouTube embed URL or direct mp4
+  posterUrl?: string;       // optional thumbnail
+}
+
+const BUILDS: Build[] = [
+  {
+    slug: 'memristor',
+    number: '01',
+    title: 'Memristor',
+    titleAccent: 'benchtop demo',
+    blurb:
+      'A discrete-component memristor on the bench — hysteretic I–V curve, pinched at the origin, drifting under successive sweeps.',
+    detail:
+      'The cell is biased through a slow triangular sweep; the loop area encodes the resistance state. The companion notebook fits the Strukov-Williams model against the captured trace and extrapolates the state-variable trajectory. Hardware for a small neuromorphic crossbar follow-up is on the bench.',
+    tags: ['analog', 'neuromorphic', 'Strukov-Williams'],
+  },
+  {
+    slug: 'radio-telescope',
+    number: '02',
+    title: 'Radio',
+    titleAccent: 'telescope build',
+    blurb:
+      'KN4ABK back-yard radio telescope — H-line (1420 MHz) receiver chain, software-defined demod, drift-scan over the galactic plane.',
+    detail:
+      'Helical feed → LNA → SDR → GNU Radio chain → integrated power spectrum. The video walks the build from boom to first H-line detection, including the LNA bias mishap that taught me to always check the DC path before powering anything. Calibration sources: cold sky vs warm ground tip.',
+    tags: ['KN4ABK', '1420 MHz', 'GNU Radio', 'drift scan'],
+  },
+];
+---
+
+<BaseLayout
+  title="Builds — Tardigrade Innovation"
+  description="Benchtop hardware projects: memristor demo, radio telescope, more on the way."
+>
+  <article class="builds-page">
+    <div class="wrap">
+      <header class="builds-head">
+        <span class="index">§ BUILDS / VIDEO</span>
+        <h1 class="display-section">From the <em>bench</em>.</h1>
+        <p class="lead">
+          Ongoing hardware projects, recorded as they happen. Videos are in post-production —
+          come back soon for the cuts.
+        </p>
+        <div class="editing-tag" aria-label="Videos in post-production">
+          <span class="editing-dot"></span>
+          <span class="editing-text">EDITING NOW · SEE U SOON</span>
+        </div>
+      </header>
+
+      <div class="builds-list">
+        {BUILDS.map((b) => (
+          <section class="build" id={b.slug}>
+            <div class="build-meta">
+              <span class="build-num">§ {b.number}</span>
+              <h2 class="build-title">
+                {b.title}{b.titleAccent && <> <em>{b.titleAccent}</em></>}
+              </h2>
+              <p class="build-blurb">{b.blurb}</p>
+              <div class="build-tags">
+                {b.tags.map((t) => <span class="tag">{t}</span>)}
+              </div>
+              <p class="build-detail">{b.detail}</p>
+            </div>
+
+            <div class="build-video">
+              {b.videoUrl ? (
+                <div class="video-wrap">
+                  {b.videoUrl.includes('youtube.com') || b.videoUrl.includes('youtu.be') ? (
+                    <iframe
+                      src={b.videoUrl}
+                      title={`${b.title} video`}
+                      loading="lazy"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowfullscreen
+                    ></iframe>
+                  ) : (
+                    <video controls poster={b.posterUrl}>
+                      <source src={b.videoUrl} />
+                      Sorry, your browser doesn't support embedded video.
+                    </video>
+                  )}
+                </div>
+              ) : (
+                <div class="video-placeholder" role="img" aria-label="Video coming soon">
+                  <div class="placeholder-frame">
+                    <span class="placeholder-glyph">▶</span>
+                    <span class="placeholder-tag">VIDEO · EDITING NOW</span>
+                    <span class="placeholder-sub">see u soon</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <p class="back">
+        Other ongoing work: <a href="/lab">interactive lab</a>,
+        <a href="/research">research</a>,
+        <a href="/about">about</a>.
+      </p>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .builds-page { padding-block: clamp(3rem, 6vw, 5rem); }
+  .builds-head { margin-bottom: 3rem; max-width: 70ch; }
+  .index {
+    font-family: var(--mono);
+    color: var(--phosphor);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    margin-bottom: 0.8rem;
+    display: block;
+  }
+  h1 { margin-bottom: 1rem; }
+  .lead {
+    font-family: var(--display);
+    font-size: 1.1rem;
+    color: var(--bone-dim);
+    line-height: 1.55;
+    margin-bottom: 1.2rem;
+  }
+
+  .editing-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--phosphor);
+    background: rgba(126, 255, 159, 0.05);
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.18em;
+    color: var(--phosphor);
+  }
+  .editing-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--phosphor);
+    box-shadow: 0 0 8px var(--phosphor);
+    animation: pulse-build 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse-build {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.7); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .editing-dot { animation: none; }
+  }
+
+  .builds-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+  }
+  .build {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule);
+  }
+  @media (max-width: 860px) {
+    .build { grid-template-columns: 1fr; gap: 1rem; }
+  }
+  .build-num {
+    font-family: var(--mono);
+    color: var(--phosphor);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    margin-bottom: 0.6rem;
+    display: block;
+  }
+  .build-title {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2rem, 4vw, 2.6rem);
+    margin: 0 0 0.75rem;
+    line-height: 1;
+  }
+  .build-title em { font-style: italic; font-weight: 300; }
+  .build-blurb {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    color: var(--bone-dim);
+    margin: 0 0 0.85rem;
+    line-height: 1.5;
+  }
+  .build-tags {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.1rem;
+  }
+  .build-tags .tag {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--bone-dim);
+    border: 1px solid var(--rule);
+    padding: 0.18em 0.5em;
+    letter-spacing: 0.04em;
+  }
+  .build-detail {
+    font-family: var(--display);
+    font-size: 0.98rem;
+    color: var(--bone);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .build-video { display: flex; align-items: stretch; }
+  .video-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--ink-2);
+    border: 1px solid var(--rule);
+    overflow: hidden;
+  }
+  .video-wrap iframe,
+  .video-wrap video {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+  .video-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background:
+      repeating-linear-gradient(
+        45deg,
+        transparent 0 14px,
+        rgba(126, 255, 159, 0.04) 14px 15px
+      ),
+      var(--ink-2);
+    border: 1px dashed var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .placeholder-frame {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .placeholder-glyph {
+    font-size: 2.4rem;
+    color: var(--phosphor);
+    opacity: 0.45;
+    line-height: 1;
+  }
+  .placeholder-tag {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--phosphor);
+    letter-spacing: 0.18em;
+  }
+  .placeholder-sub {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--bone-dim);
+  }
+
+  .back {
+    margin-top: 4rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--bone-dim);
+    letter-spacing: 0.06em;
+  }
+  .back a {
+    color: var(--bone);
+    margin: 0 0.4em;
+  }
+  .back a:hover { color: var(--phosphor); }
+</style>

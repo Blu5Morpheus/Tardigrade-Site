@@ -18,6 +18,7 @@ type SweepResp = {
   plaquette_grid: number[][];
   history: { action: number; avg_plaq: number }[];
   regime: 'confined' | 'deconfined';
+  polyakov?: number;
 };
 
 const ENDPOINT = MODAL.lattice;
@@ -112,6 +113,11 @@ export default function LatticeGaugeDemo() {
               </div>
               <div className={`lg-regime lg-regime-${resp.regime}`}>
                 ● REGIME : {resp.regime.toUpperCase()}
+                {resp.polyakov !== undefined && (
+                  <span style={{ marginLeft: '1rem', opacity: 0.7 }}>
+                    · Polyakov loop ≈ {resp.polyakov.toFixed(3)}
+                  </span>
+                )}
               </div>
             </>
           ) : (

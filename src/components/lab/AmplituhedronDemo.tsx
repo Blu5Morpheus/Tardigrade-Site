@@ -5,7 +5,7 @@
  * a simple orthographic projection), and dump the minor table.
  */
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { MODAL } from '../../lib/config';
 import { jsonPost } from '../../lib/modal-client';
 import DemoFrame, { type DemoStatus } from './DemoFrame';
@@ -19,6 +19,13 @@ type Resp = {
   cyclic_positivity: boolean;
   minors: { indices: number[]; minor: number }[];
   interior_samples: number[][];
+  face_counts?: {
+    f_0_vertices: number;
+    edges: number | null;
+    f_facets: number;
+    neighborly_order: number;
+  };
+  note?: string;
 };
 
 const ENDPOINT = MODAL.amplituhedron;
@@ -85,7 +92,23 @@ export default function AmplituhedronDemo() {
                   value={resp.cyclic_positivity ? '✓ All minors > 0' : '✗ Violation'}
                   good={resp.cyclic_positivity}
                 />
+                {resp.face_counts && (
+                  <>
+                    <Metric label="Facets (UBT)" value={String(resp.face_counts.f_facets)} />
+                    {resp.face_counts.edges !== null && (
+                      <Metric label="Edges (2-neighborly)" value={String(resp.face_counts.edges)} />
+                    )}
+                    <Metric label={`Neighborly order`}
+                            value={`⌊d/2⌋ = ${resp.face_counts.neighborly_order}`} />
+                  </>
+                )}
               </div>
+              {resp.note && (
+                <p style={{
+                  fontFamily: 'var(--display)', fontStyle: 'italic',
+                  color: 'var(--bone-dim)', fontSize: '0.9rem',
+                }}>{resp.note}</p>
+              )}
               {view === '2d' && <Plot2D resp={resp} />}
               {view === '3d' && resp.dimension >= 3 && <Plot3D resp={resp} />}
               {view === '3d' && resp.dimension < 3 && (

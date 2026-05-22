@@ -66,7 +66,8 @@ export const MODAL = {
   lattice: env('MODAL_LATTICE', 'https://blu5morpheus--tardigrade-lattice-fastapi-app.modal.run'),
   pageCurve: env('MODAL_PAGE_CURVE', 'https://blu5morpheus--tardigrade-page-curve-fastapi-app.modal.run'),
   amplituhedron: env('MODAL_AMPLITUHEDRON', 'https://blu5morpheus--tardigrade-amplituhedron-fastapi-app.modal.run'),
-  clifford: env('MODAL_CLIFFORD', 'https://blu5morpheus--tardigrade-clifford-fastapi-app.modal.run'),
+  plasmaMhd: env('MODAL_PLASMA_MHD', 'https://blu5morpheus--tardigrade-plasma-mhd-fastapi-app.modal.run'),
+  hnn: env('MODAL_HNN', 'https://blu5morpheus--tardigrade-hnn-fastapi-app.modal.run'),
   mebot: env('MODAL_MEBOT', 'https://blu5morpheus--tardigrade-mebot-fastapi-app.modal.run'),
 } as const;
 
